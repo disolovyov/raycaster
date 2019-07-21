@@ -1,8 +1,11 @@
-use crate::color::{rgb, unpack_rgba};
+use crate::framebuffer::Framebuffer;
 
 mod color;
+mod framebuffer;
 
 fn main() {
-    let c = rgb(108, 113, 196);
-    println!("{:?}", unpack_rgba(c));
+    const WIDTH: usize = 512;
+    const HEIGHT: usize = 512;
+
+    let _framebuffer = Framebuffer::new(WIDTH, HEIGHT);
 }

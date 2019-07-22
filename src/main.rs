@@ -1,76 +1,64 @@
+extern crate sdl2;
+
 use std::error::Error;
-use std::f32::consts::PI;
+use std::thread::sleep;
+use std::time::Duration;
 
-use crate::color::Color;
-use crate::framebuffer::new_framebuffer;
-use crate::map::new_map;
+use sdl2::event::Event;
+use sdl2::gfx::primitives::DrawRenderer;
+use sdl2::pixels::Color;
 
-mod color;
+use crate::game::Game;
+
 mod framebuffer;
+mod game;
 mod map;
 mod rect;
 
-fn main() -> Result<(), Box<Error>> {
-    let vw = 512;
-    let vh = 512;
-    let mut framebuffer = new_framebuffer(vw * 2, vh);
+const VW: usize = 512;
+const VH: usize = 512;
 
-    let map = new_map();
-    let rect_width = vw / map.width();
-    let rect_height = vh / map.height();
-    let wall_color = Color::rgb(0, 0, 0);
-    for y in 0..map.height() {
-        for x in 0..map.width() {
-            if map.get(x, y) == b' ' {
-                continue;
-            }
-            let rect_x = x * rect_width;
-            let rect_y = y * rect_height;
-            framebuffer.draw_rect(rect_x, rect_y, rect_width, rect_height, wall_color);
-        }
-    }
+pub fn main() -> Result<(), Box<dyn Error>> {
+    let sdl_context = sdl2::init()?;
+    let video_subsystem = sdl_context.video()?;
 
-    let player_x: f32 = 3.456;
-    let player_y: f32 = 2.345;
-    let player_a: f32 = 1.523;
-    let fov: f32 = PI / 3.0;
-    let player_color = Color::rgb(128, 128, 128);
+    let mut canvas = video_subsystem
+        .window("tinyraycaster", (VW * 2) as u32, VH as u32)
+        .position_centered()
+        .opengl()
+        .build()?
+        .into_canvas()
+        .build()?;
 
-    framebuffer.draw_rect(
-        (player_x * rect_width as f32) as usize - 2,
-        (player_y * rect_height as f32) as usize - 2,
-        5,
-        5,
-        player_color,
-    );
+    canvas.set_draw_color(Color::RGB(0, 0, 0));
+    canvas.clear();
+    canvas.present();
 
-    for ray in 0..vw {
-        let angle = player_a - fov / 2.0 + fov * ray as f32 / vw as f32;
+    let frame = Duration::new(0, 1_000_000_000u32 / 60);
+    let mut event_pump = sdl_context.event_pump()?;
+    let mut game = Game::new(VW, VH);
 
-        for i in 0..(map.width() * map.height()) {
-            let t = i as f32 * 0.05;
-            let cx = player_x + t * angle.cos();
-            let cy = player_y + t * angle.sin();
-
-            let pix_x = (cx * rect_width as f32) as usize;
-            let pix_y = (cy * rect_height as f32) as usize;
-            framebuffer.draw_pixel(pix_x, pix_y, player_color);
-
-            if map.get(cx as usize, cy as usize) != b' ' {
-                let column_height = (vw as f32 / t) as usize;
-                framebuffer.draw_rect(
-                    vw + ray,
-                    (vh - column_height) / 2,
-                    1,
-                    column_height,
-                    wall_color,
-                );
-                break;
+    'gameloop: loop {
+        for event in event_pump.poll_iter() {
+            match event {
+                Event::Quit { .. } => break 'gameloop,
+                _ => {}
             }
         }
-    }
 
-    framebuffer.write_ppm("target/out.ppm")?;
+        game.update();
+
+        let framebuffer = game.draw();
+        for y in 0..framebuffer.height() {
+            for x in 0..framebuffer.width() {
+                let color = framebuffer.get(x, y);
+                canvas.pixel(x as i16, y as i16, color)?;
+            }
+        }
+        canvas.present();
+
+        sleep(frame);
+    }
 
     Ok(())
 }

@@ -1,4 +1,6 @@
 use crate::rect::Rect;
+use sdl2::pixels::Color;
+use std::collections::HashMap;
 
 pub fn new_map() -> Rect<u8> {
     let map = b"\
@@ -20,4 +22,16 @@ pub fn new_map() -> Rect<u8> {
         0002222222200000";
 
     Rect::new(16, 16, map)
+}
+
+pub fn wall_colors() -> HashMap<u8, Color> {
+    [
+        (b'0', Color::RGB(64, 64, 64)),
+        (b'1', Color::RGB(96, 96, 96)),
+        (b'2', Color::RGB(128, 128, 128)),
+        (b'3', Color::RGB(160, 160, 160)),
+    ]
+    .iter()
+    .cloned()
+    .collect()
 }

@@ -41,8 +41,4 @@ impl<T: Copy> Rect<T> {
 
         self.data[x + y * self.width] = value;
     }
-
-    pub fn iter(&self) -> core::slice::Iter<T> {
-        self.data.iter()
-    }
 }

@@ -20,8 +20,18 @@ impl Framebuffer {
         }
     }
 
-    pub fn set(&mut self, x: usize, y: usize, color: Color) {
+    pub fn draw_pixel(&mut self, x: usize, y: usize, color: Color) {
+        assert!(x < self.width, "x = {} out of bounds", x);
+        assert!(y < self.height, "y = {} out of bounds", y);
         self.data[x + y * self.width] = color;
+    }
+
+    pub fn draw_rect(&mut self, x: usize, y: usize, width: usize, height: usize, color: Color) {
+        for cy in y..(y + height) {
+            for cx in x..(x + width) {
+                self.draw_pixel(cx, cy, color);
+            }
+        }
     }
 
     pub fn write_ppm<P: AsRef<Path>>(&self, path: P) -> Result<()> {

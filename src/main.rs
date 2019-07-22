@@ -1,17 +1,18 @@
 use std::error::Error;
 
 use crate::color::Color;
-use crate::framebuffer::Framebuffer;
-use crate::map::Map;
+use crate::framebuffer::new_framebuffer;
+use crate::map::new_map;
 
 mod color;
 mod framebuffer;
 mod map;
+mod rect;
 
 fn main() -> Result<(), Box<Error>> {
     let fb_width = 512;
     let fb_height = 512;
-    let mut framebuffer = Framebuffer::new(fb_width, fb_height);
+    let mut framebuffer = new_framebuffer(fb_width, fb_height);
 
     for y in 0..fb_height {
         for x in 0..fb_width {
@@ -23,7 +24,7 @@ fn main() -> Result<(), Box<Error>> {
         }
     }
 
-    let map = Map::new();
+    let map = new_map();
     let rect_width = fb_width / map.width();
     let rect_height = fb_height / map.height();
     for y in 0..map.height() {

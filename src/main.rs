@@ -11,13 +11,14 @@ mod map;
 mod rect;
 
 fn main() -> Result<(), Box<Error>> {
-    let view_width = 512;
-    let view_height = 512;
-    let mut framebuffer = new_framebuffer(view_width, view_height);
+    let vw = 512;
+    let vh = 512;
+    let mut framebuffer = new_framebuffer(vw * 2, vh);
 
     let map = new_map();
-    let rect_width = view_width / map.width();
-    let rect_height = view_height / map.height();
+    let rect_width = vw / map.width();
+    let rect_height = vh / map.height();
+    let wall_color = Color::rgb(0, 0, 0);
     for y in 0..map.height() {
         for x in 0..map.width() {
             if map.get(x, y) == b' ' {
@@ -25,8 +26,7 @@ fn main() -> Result<(), Box<Error>> {
             }
             let rect_x = x * rect_width;
             let rect_y = y * rect_height;
-            let color = Color::rgb(0, 0, 0);
-            framebuffer.draw_rect(rect_x, rect_y, rect_width, rect_height, color);
+            framebuffer.draw_rect(rect_x, rect_y, rect_width, rect_height, wall_color);
         }
     }
 
@@ -44,20 +44,29 @@ fn main() -> Result<(), Box<Error>> {
         player_color,
     );
 
-    for ray in 0..view_width {
-        let angle = player_a - fov / 2.0 + fov * ray as f32 / view_width as f32;
+    for ray in 0..vw {
+        let angle = player_a - fov / 2.0 + fov * ray as f32 / vw as f32;
 
         for i in 0..(map.width() * map.height()) {
             let t = i as f32 * 0.05;
             let cx = player_x + t * angle.cos();
             let cy = player_y + t * angle.sin();
-            if map.get(cx as usize, cy as usize) != b' ' {
-                break;
-            }
 
             let pix_x = (cx * rect_width as f32) as usize;
             let pix_y = (cy * rect_height as f32) as usize;
-            framebuffer.draw_pixel(pix_x, pix_y, player_color)
+            framebuffer.draw_pixel(pix_x, pix_y, player_color);
+
+            if map.get(cx as usize, cy as usize) != b' ' {
+                let column_height = (vw as f32 / t) as usize;
+                framebuffer.draw_rect(
+                    vw + ray,
+                    (vh - column_height) / 2,
+                    1,
+                    column_height,
+                    wall_color,
+                );
+                break;
+            }
         }
     }
 

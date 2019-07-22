@@ -39,6 +39,31 @@ fn main() -> Result<(), Box<Error>> {
         }
     }
 
+    let player_x: f64 = 3.456;
+    let player_y: f64 = 2.345;
+    let player_a: f64 = 1.523;
+    let player_color = Color::rgb(255, 255, 255);
+
+    framebuffer.draw_rect(
+        (player_x * rect_width as f64) as usize - 2,
+        (player_y * rect_height as f64) as usize - 2,
+        5,
+        5,
+        player_color,
+    );
+
+    for i in 0..(map.width() * map.height()) {
+        let t = i as f64 * 0.05;
+        let cx = player_x + t * player_a.cos();
+        let cy = player_y + t * player_a.sin();
+        if map.get(cx as usize, cy as usize) != b' ' {
+            break;
+        }
+        let pix_x = (cx * rect_width as f64) as usize;
+        let pix_y = (cy * rect_height as f64) as usize;
+        framebuffer.draw_pixel(pix_x, pix_y, player_color)
+    }
+
     framebuffer.write_ppm("target/out.ppm")?;
 
     Ok(())

@@ -6,7 +6,7 @@ use crate::color::Color;
 use crate::rect::Rect;
 
 pub fn new_framebuffer(width: usize, height: usize) -> Rect<Color> {
-    let red = Color::rgb(255, 0, 0);
+    let red = Color::rgb(255, 255, 255);
     let data = &vec![red; width * height];
     Rect::new(width, height, data)
 }

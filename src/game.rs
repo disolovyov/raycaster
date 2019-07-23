@@ -53,7 +53,7 @@ impl Game {
         let player_x: f32 = 3.456;
         let player_y: f32 = 2.345;
         let fov: f32 = PI / 3.0;
-        let player_color = Color::RGB(128, 128, 128);
+        let player_color = Color::RGB(192, 192, 192);
 
         for ray in 0..self.vw {
             let angle = self.angle - fov / 2.0 + fov * ray as f32 / self.vw as f32;
@@ -69,7 +69,8 @@ impl Game {
 
                 let cell = room.get(cx as usize, cy as usize);
                 if cell != b' ' {
-                    let column_height = (self.vw as f32 / t) as usize;
+                    let column_height =
+                        (self.vw as f32 / (t * (angle - self.angle).cos())) as usize;
                     framebuffer.draw_rect(
                         self.vw + ray,
                         (self.vh - column_height) / 2,

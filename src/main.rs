@@ -5,15 +5,14 @@ use std::thread::sleep;
 use std::time::Duration;
 
 use sdl2::event::Event;
-use sdl2::gfx::primitives::DrawRenderer;
 use sdl2::pixels::Color;
+use sdl2::pixels::PixelFormatEnum::RGB24;
 
 use crate::game::Game;
 
 mod framebuffer;
 mod game;
-mod map;
-mod rect;
+mod room;
 
 const VW: usize = 512;
 const VH: usize = 512;
@@ -49,12 +48,16 @@ pub fn main() -> Result<(), Box<dyn Error>> {
         game.update();
 
         let framebuffer = game.draw();
-        for y in 0..framebuffer.height() {
-            for x in 0..framebuffer.width() {
-                let color = framebuffer.get(x, y);
-                canvas.pixel(x as i16, y as i16, color)?;
-            }
-        }
+        let texture_creator = canvas.texture_creator();
+        let mut texture = texture_creator.create_texture_streaming(
+            RGB24,
+            framebuffer.width() as u32,
+            framebuffer.height() as u32,
+        )?;
+        texture.update(None, framebuffer.pixel_data(), framebuffer.pitch())?;
+
+        canvas.clear();
+        canvas.copy(&texture, None, None)?;
         canvas.present();
 
         sleep(frame);

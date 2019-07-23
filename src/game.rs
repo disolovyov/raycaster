@@ -2,9 +2,8 @@ use std::f32::consts::PI;
 
 use sdl2::pixels::Color;
 
-use crate::framebuffer::new_framebuffer;
-use crate::map::{new_map, wall_colors};
-use crate::rect::Rect;
+use crate::framebuffer::Framebuffer;
+use crate::room::Room;
 
 pub struct Game {
     vw: usize,
@@ -22,20 +21,20 @@ impl Game {
     }
 
     pub fn update(&mut self) {
-        self.angle += 5.0 * PI / 360.0;
+        self.angle += 3.0 * PI / 360.0;
     }
 
-    pub fn draw(&self) -> Rect<Color> {
-        let mut framebuffer = new_framebuffer(self.vw * 2, self.vh);
+    pub fn draw(&self) -> Framebuffer {
+        let mut framebuffer = Framebuffer::new(self.vw * 2, self.vh);
 
-        let wall_colors = wall_colors();
+        let wall_colors = Room::wall_colors();
 
-        let map = new_map();
-        let rect_width = self.vw / map.width();
-        let rect_height = self.vh / map.height();
-        for y in 0..map.height() {
-            for x in 0..map.width() {
-                let cell = map.get(x, y);
+        let room = Room::new();
+        let rect_width = self.vw / room.width();
+        let rect_height = self.vh / room.height();
+        for y in 0..room.height() {
+            for x in 0..room.width() {
+                let cell = room.get(x, y);
                 if cell == b' ' {
                     continue;
                 }
@@ -56,19 +55,11 @@ impl Game {
         let fov: f32 = PI / 3.0;
         let player_color = Color::RGB(128, 128, 128);
 
-        framebuffer.draw_rect(
-            (player_x * rect_width as f32) as usize - 2,
-            (player_y * rect_height as f32) as usize - 2,
-            5,
-            5,
-            player_color,
-        );
-
         for ray in 0..self.vw {
             let angle = self.angle - fov / 2.0 + fov * ray as f32 / self.vw as f32;
 
-            for i in 0..(map.width() * map.height()) {
-                let t = i as f32 * 0.05;
+            for i in 0..2000 {
+                let t = i as f32 * 0.01;
                 let cx = player_x + t * angle.cos();
                 let cy = player_y + t * angle.sin();
 
@@ -76,7 +67,7 @@ impl Game {
                 let pix_y = (cy * rect_height as f32) as usize;
                 framebuffer.draw_pixel(pix_x, pix_y, player_color);
 
-                let cell = map.get(cx as usize, cy as usize);
+                let cell = room.get(cx as usize, cy as usize);
                 if cell != b' ' {
                     let column_height = (self.vw as f32 / t) as usize;
                     framebuffer.draw_rect(

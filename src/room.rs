@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use sdl2::pixels::Color;
+use crate::framebuffer::RGB;
 
 pub struct Room {
     width: usize,
@@ -35,12 +35,12 @@ impl Room {
         }
     }
 
-    pub fn wall_colors() -> HashMap<u8, Color> {
+    pub fn wall_colors() -> HashMap<u8, RGB> {
         [
-            (b'0', Color::RGB(64, 64, 64)),
-            (b'1', Color::RGB(96, 96, 96)),
-            (b'2', Color::RGB(128, 128, 128)),
-            (b'3', Color::RGB(160, 160, 160)),
+            (b'0', RGB(64, 64, 64)),
+            (b'1', RGB(96, 96, 96)),
+            (b'2', RGB(128, 128, 128)),
+            (b'3', RGB(160, 160, 160)),
         ]
         .iter()
         .cloned()

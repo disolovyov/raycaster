@@ -1,37 +1,38 @@
 use std::f32::consts::PI;
 
-use sdl2::pixels::Color;
+use quicksilver::graphics::Font;
+use quicksilver::lifecycle::{Asset, State, Window};
+use quicksilver::prelude::{Background::Img, Color, FontStyle};
+use quicksilver::Result;
 
-use crate::framebuffer::Framebuffer;
+use crate::config::{VH, VW};
+use crate::framebuffer::{Framebuffer, RGB};
 use crate::room::Room;
 
 pub struct Game {
-    vw: usize,
-    vh: usize,
     angle: f32,
+    font: Asset<Font>,
 }
 
-impl Game {
-    pub fn new(vw: usize, vh: usize) -> Game {
-        Game {
-            vw,
-            vh,
-            angle: 1.523,
-        }
+impl State for Game {
+    fn new() -> Result<Self> {
+        let font = Asset::new(Font::load("font.ttf"));
+        Ok(Game { angle: 1.523, font })
     }
 
-    pub fn update(&mut self) {
-        self.angle += 3.0 * PI / 360.0;
+    fn update(&mut self, _window: &mut Window) -> Result<()> {
+        self.angle += PI / 360.0;
+        Ok(())
     }
 
-    pub fn draw(&self) -> Framebuffer {
-        let mut framebuffer = Framebuffer::new(self.vw * 2, self.vh);
+    fn draw(&mut self, window: &mut Window) -> Result<()> {
+        let mut framebuffer = Framebuffer::new(VW * 2, VH);
 
         let wall_colors = Room::wall_colors();
 
         let room = Room::new();
-        let rect_width = self.vw / room.width();
-        let rect_height = self.vh / room.height();
+        let rect_width = VW / room.width();
+        let rect_height = VH / room.height();
         for y in 0..room.height() {
             for x in 0..room.width() {
                 let cell = room.get(x, y);
@@ -53,10 +54,10 @@ impl Game {
         let player_x: f32 = 3.456;
         let player_y: f32 = 2.345;
         let fov: f32 = PI / 3.0;
-        let player_color = Color::RGB(192, 192, 192);
+        let player_color = RGB(192, 192, 192);
 
-        for ray in 0..self.vw {
-            let angle = self.angle - fov / 2.0 + fov * ray as f32 / self.vw as f32;
+        for ray in 0..VW {
+            let angle = self.angle - fov / 2.0 + fov * ray as f32 / VW as f32;
 
             for i in 0..2000 {
                 let t = i as f32 * 0.01;
@@ -69,11 +70,10 @@ impl Game {
 
                 let cell = room.get(cx as usize, cy as usize);
                 if cell != b' ' {
-                    let column_height =
-                        (self.vw as f32 / (t * (angle - self.angle).cos())) as usize;
+                    let column_height = (VW as f32 / (t * (angle - self.angle).cos())) as usize;
                     framebuffer.draw_rect(
-                        self.vw + ray,
-                        (self.vh - column_height) / 2,
+                        VW + ray,
+                        (VH - column_height) / 2,
                         1,
                         column_height,
                         *wall_colors.get(&cell).unwrap(),
@@ -83,6 +83,18 @@ impl Game {
             }
         }
 
-        framebuffer
+        let frame = framebuffer.to_image()?;
+        window.clear(Color::BLACK)?;
+        window.draw(&frame.area(), Img(&frame));
+
+        self.font.execute(|font| {
+            let fps = window.current_fps();
+            let fps_counter = format!("fps: {}", fps as u8);
+            let image = font.render(&fps_counter, &FontStyle::new(12.0, Color::RED))?;
+            window.draw(&image.area(), Img(&image));
+            Ok(())
+        })?;
+
+        Ok(())
     }
 }

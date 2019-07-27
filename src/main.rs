@@ -1,17 +1,19 @@
-use quicksilver::geom::Vector;
-use quicksilver::lifecycle::run;
-use quicksilver::lifecycle::Settings;
+use quicksilver::prelude::*;
 
 use crate::config::{VH, VW};
-use crate::game::Game;
+use crate::states::main::MainState;
 
+mod assets;
+mod components;
 mod config;
-mod framebuffer;
-mod game;
-mod room;
+mod entities;
+mod gfx;
+mod resources;
+mod states;
+mod systems;
 
 fn main() {
-    let size = Vector::new(VW as u32 * 2, VH as u32);
+    let size = Vector::new(VW, VH);
     let settings = Settings::default();
-    run::<Game>("tinyraycaster", size, settings);
+    run::<MainState>("tinyraycaster", size, settings);
 }

@@ -1,6 +1,7 @@
 use std::f32::consts::PI;
 
 use quicksilver::graphics::Font;
+use quicksilver::input::Key;
 use quicksilver::lifecycle::{Asset, State, Window};
 use quicksilver::prelude::{Background::Img, Color, FontStyle};
 use quicksilver::Result;
@@ -9,19 +10,43 @@ use crate::config::{VH, VW};
 use crate::framebuffer::{Framebuffer, RGB};
 use crate::room::Room;
 
-pub struct Game {
+struct Player {
+    x: f32,
+    y: f32,
     angle: f32,
+}
+
+pub struct Game {
+    player: Player,
     font: Asset<Font>,
 }
 
 impl State for Game {
     fn new() -> Result<Self> {
-        let font = Asset::new(Font::load("font.ttf"));
-        Ok(Game { angle: 1.523, font })
+        Ok(Game {
+            player: Player {
+                x: 1.5,
+                y: 1.5,
+                angle: 0.0,
+            },
+            font: Asset::new(Font::load("font.ttf")),
+        })
     }
 
-    fn update(&mut self, _window: &mut Window) -> Result<()> {
-        self.angle += PI / 360.0;
+    fn update(&mut self, window: &mut Window) -> Result<()> {
+        let keyboard = window.keyboard();
+        if keyboard[Key::A].is_down() {
+            self.player.angle -= 0.03;
+        } else if keyboard[Key::D].is_down() {
+            self.player.angle += 0.03;
+        }
+        if keyboard[Key::W].is_down() {
+            self.player.x += self.player.angle.cos() * 0.05;
+            self.player.y += self.player.angle.sin() * 0.05;
+        } else if keyboard[Key::S].is_down() {
+            self.player.x -= self.player.angle.cos() * 0.05;
+            self.player.y -= self.player.angle.sin() * 0.05;
+        }
         Ok(())
     }
 
@@ -51,18 +76,16 @@ impl State for Game {
             }
         }
 
-        let player_x: f32 = 3.456;
-        let player_y: f32 = 2.345;
         let fov: f32 = PI / 3.0;
         let player_color = RGB(192, 192, 192);
 
         for ray in 0..VW {
-            let angle = self.angle - fov / 2.0 + fov * ray as f32 / VW as f32;
+            let angle = self.player.angle - fov / 2.0 + fov * ray as f32 / VW as f32;
 
             for i in 0..2000 {
                 let t = i as f32 * 0.01;
-                let cx = player_x + t * angle.cos();
-                let cy = player_y + t * angle.sin();
+                let cx = self.player.x + t * angle.cos();
+                let cy = self.player.y + t * angle.sin();
 
                 let pix_x = (cx * rect_width as f32) as usize;
                 let pix_y = (cy * rect_height as f32) as usize;
@@ -70,7 +93,11 @@ impl State for Game {
 
                 let cell = room.get(cx as usize, cy as usize);
                 if cell != b' ' {
-                    let column_height = (VW as f32 / (t * (angle - self.angle).cos())) as usize;
+                    let mut column_height =
+                        (VW as f32 / (t * (angle - self.player.angle).cos())) as usize;
+                    if column_height > VH {
+                        column_height = VH;
+                    }
                     framebuffer.draw_rect(
                         VW + ray,
                         (VH - column_height) / 2,
@@ -90,7 +117,7 @@ impl State for Game {
         self.font.execute(|font| {
             let fps = window.current_fps();
             let fps_counter = format!("fps: {}", fps as u8);
-            let image = font.render(&fps_counter, &FontStyle::new(12.0, Color::RED))?;
+            let image = font.render(&fps_counter, &FontStyle::new(20.0, Color::YELLOW))?;
             window.draw(&image.area(), Img(&image));
             Ok(())
         })?;

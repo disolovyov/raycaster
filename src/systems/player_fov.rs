@@ -5,9 +5,8 @@ use crate::components::player::Player;
 use crate::components::transform::Transform;
 use crate::config::{FOV, VH, VW};
 use crate::gfx::framebuffer::Framebuffer;
-use crate::resources::renderer::{Layer, Renderable, Renderer, RenderItem};
+use crate::resources::renderer::{Layer, RenderItem, Renderable, Renderer};
 use crate::resources::room::Room;
-use crate::resources::walls::Walls;
 
 pub struct PlayerFovSystem;
 
@@ -17,11 +16,10 @@ impl<'a> System<'a> for PlayerFovSystem {
         ReadStorage<'a, Transform>,
         Write<'a, Renderer>,
         Read<'a, Room>,
-        Read<'a, Walls>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (players, transforms, mut renderer, room, walls) = data;
+        let (players, transforms, mut renderer, room) = data;
 
         let mut framebuffer = Framebuffer::new(VW, VH);
 
@@ -35,7 +33,7 @@ impl<'a> System<'a> for PlayerFovSystem {
                     let cy = transform.position.y + t * angle.sin();
 
                     let cell = room.get(cx as u32, cy as u32);
-                    if cell != b' ' {
+                    if cell != 0 {
                         let mut column_height =
                             (VW as f32 / (t * (angle - transform.angle).cos())) as u32;
                         if column_height > VH {
@@ -46,7 +44,7 @@ impl<'a> System<'a> for PlayerFovSystem {
                             (VH - column_height) / 2,
                             1,
                             column_height,
-                            walls.get_color(cell),
+                            room.get_color(cell),
                         );
                         break;
                     }

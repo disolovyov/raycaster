@@ -7,7 +7,6 @@ use crate::config::{FOV, VH, VW};
 use crate::gfx::framebuffer::{Framebuffer, RGB};
 use crate::resources::renderer::{Layer, RenderItem, Renderable, Renderer};
 use crate::resources::room::Room;
-use crate::resources::walls::Walls;
 
 pub struct MinimapSystem;
 
@@ -19,11 +18,10 @@ impl<'a> System<'a> for MinimapSystem {
         ReadStorage<'a, Transform>,
         Write<'a, Renderer>,
         Read<'a, Room>,
-        Read<'a, Walls>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (players, transforms, mut renderer, room, walls) = data;
+        let (players, transforms, mut renderer, room) = data;
 
         let width = room.width() * SCALE;
         let height = room.height() * SCALE;
@@ -32,7 +30,7 @@ impl<'a> System<'a> for MinimapSystem {
         for y in 0..room.height() {
             for x in 0..room.width() {
                 let cell = room.get(x, y);
-                framebuffer.draw_rect(x * SCALE, y * SCALE, SCALE, SCALE, walls.get_color(cell));
+                framebuffer.draw_rect(x * SCALE, y * SCALE, SCALE, SCALE, room.get_color(cell));
             }
         }
 

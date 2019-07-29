@@ -29,8 +29,8 @@ impl<'a> System<'a> for MinimapSystem {
 
         for y in 0..room.height() {
             for x in 0..room.width() {
-                let cell = room.get(x, y);
-                framebuffer.draw_rect(x * SCALE, y * SCALE, SCALE, SCALE, room.get_color(cell));
+                let tile = room.get(x, y);
+                framebuffer.draw_rect(x * SCALE, y * SCALE, SCALE, SCALE, room.get_color(tile));
             }
         }
 

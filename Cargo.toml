@@ -5,5 +5,7 @@ edition = "2018"
 
 [dependencies]
 quicksilver = "0.3.16"
-specs = { version = "0.15.0", default-features = false }
+image = "*"
+futures = "*"
+specs = "0.15.0"
 tiled = "0.8.0"

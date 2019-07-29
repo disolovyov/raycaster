@@ -1,11 +1,20 @@
 use std::path::Path;
 
-use crate::gfx::framebuffer::RGB;
+use futures::Future;
+use quicksilver::load_file;
+
+use crate::gfx::framebuffer::{PIXEL_SIZE, RGB};
+use image::GenericImageView;
+
+pub const TILE_SIZE: usize = 64;
+pub const TILE_COUNT: usize = 8;
 
 pub struct Room {
     width: u32,
     height: u32,
     map: Vec<u8>,
+    textures: Vec<u8>,
+    textures_width: usize,
 }
 
 impl Default for Room {
@@ -16,18 +25,28 @@ impl Default for Room {
 
 impl Room {
     pub fn tiled_map(name: &str) -> Self {
-        let result = tiled::parse_file(&Path::new("test.tmx"));
+        let result = tiled::parse_file(&Path::new(name));
         let tiled_map = result.expect(&format!("Failed to load {}", name));
+
         let map = tiled_map.layers[0]
             .tiles
             .iter()
             .flat_map(|row| row.iter().map(|tile| *tile as u8))
             .collect();
 
+        let bytes = load_file("wolftextures.png")
+            .wait()
+            .expect("Failed to load textures");
+        let image = image::load_from_memory(&bytes).expect("Failed to load textures");
+        let textures_width = image.width() as usize;
+        let textures = image.to_rgb().into_raw();
+
         Room {
             width: tiled_map.width,
             height: tiled_map.height,
             map,
+            textures,
+            textures_width,
         }
     }
 
@@ -55,5 +74,24 @@ impl Room {
             7 => RGB(64, 64, 0),
             _ => RGB(0, 0, 0),
         }
+    }
+
+    pub fn get_texture_column(&self, tile: u8, x: usize, column_height: usize) -> Vec<RGB> {
+        debug_assert!(
+            tile >= 1 && tile as usize <= TILE_COUNT,
+            format!("No tile with id {}", tile)
+        );
+        let mut column = vec![RGB(0, 0, 0); column_height];
+        for y in 0..column_height {
+            let tile_x = (tile - 1) as usize * TILE_SIZE + x;
+            let tile_y = y * TILE_SIZE / column_height;
+            let offset = (self.textures_width * tile_y + tile_x) * PIXEL_SIZE;
+            column[y] = RGB(
+                self.textures[offset],
+                self.textures[offset + 1],
+                self.textures[offset + 2],
+            );
+        }
+        column
     }
 }

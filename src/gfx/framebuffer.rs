@@ -4,6 +4,8 @@ use quicksilver::Result;
 #[derive(Clone, Copy, Debug)]
 pub struct RGB(pub u8, pub u8, pub u8);
 
+pub const PIXEL_SIZE: usize = 3;
+
 pub struct Framebuffer {
     width: u32,
     height: u32,
@@ -15,7 +17,7 @@ impl Framebuffer {
         Framebuffer {
             width,
             height,
-            data: vec![0; width as usize * height as usize * 3],
+            data: vec![0; width as usize * height as usize * PIXEL_SIZE],
         }
     }
 
@@ -23,7 +25,7 @@ impl Framebuffer {
         debug_assert!(x < self.width, "x = {} out of bounds", x);
         debug_assert!(y < self.height, "y = {} out of bounds", y);
 
-        let offset = (self.width * y + x) as usize * 3;
+        let offset = (self.width * y + x) as usize * PIXEL_SIZE;
         self.data[offset] = color.0;
         self.data[offset + 1] = color.1;
         self.data[offset + 2] = color.2;

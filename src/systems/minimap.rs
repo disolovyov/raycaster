@@ -4,9 +4,9 @@ use specs::prelude::*;
 use crate::components::player::Player;
 use crate::components::transform::Transform;
 use crate::config::{FOV, VH, VW};
-use crate::gfx::framebuffer::{Framebuffer, RGB};
 use crate::resources::renderer::{Layer, RenderItem, Renderable, Renderer};
 use crate::resources::room::Room;
+use crate::util::framebuffer::{Framebuffer, RGB};
 
 pub struct MinimapSystem;
 

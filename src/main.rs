@@ -7,10 +7,10 @@ mod assets;
 mod components;
 mod config;
 mod entities;
-mod gfx;
 mod resources;
 mod states;
 mod systems;
+mod util;
 
 fn main() {
     let size = Vector::new(VW, VH);

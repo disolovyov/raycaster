@@ -1,10 +1,10 @@
 use std::path::Path;
 
-use futures::Future;
+use image::GenericImageView;
 use quicksilver::load_file;
 
-use crate::gfx::framebuffer::{PIXEL_SIZE, RGB};
-use image::GenericImageView;
+use crate::util::file::load_file_sync;
+use crate::util::framebuffer::{PIXEL_SIZE, RGB};
 
 pub const TILE_SIZE: usize = 64;
 pub const TILE_COUNT: usize = 8;
@@ -25,7 +25,8 @@ impl Default for Room {
 
 impl Room {
     pub fn tiled_map(name: &str) -> Self {
-        let result = tiled::parse_file(&Path::new(name));
+        let tiled_bytes = load_file_sync(name);
+        let result = tiled::parse(tiled_bytes.as_slice());
         let tiled_map = result.expect(&format!("Failed to load {}", name));
 
         let map = tiled_map.layers[0]
@@ -34,12 +35,10 @@ impl Room {
             .flat_map(|row| row.iter().map(|tile| *tile as u8))
             .collect();
 
-        let bytes = load_file("wolftextures.png")
-            .wait()
-            .expect("Failed to load textures");
-        let image = image::load_from_memory(&bytes).expect("Failed to load textures");
-        let textures_width = image.width() as usize;
-        let textures = image.to_rgb().into_raw();
+        let tex_image_bytes = load_file_sync("wolftextures.png");
+        let tex_image = image::load_from_memory(&tex_image_bytes).expect("Failed to load textures");
+        let textures_width = tex_image.width() as usize;
+        let textures = tex_image.to_rgb().into_raw();
 
         Room {
             width: tiled_map.width,

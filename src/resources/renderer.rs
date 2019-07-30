@@ -1,7 +1,7 @@
 use quicksilver::prelude::*;
 
 use crate::assets::Assets;
-use crate::gfx::framebuffer::Framebuffer;
+use crate::util::framebuffer::Framebuffer;
 
 pub struct Renderer {
     items: Vec<RenderItem>,

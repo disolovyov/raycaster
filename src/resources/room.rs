@@ -1,13 +1,12 @@
-use std::path::Path;
-
 use image::GenericImageView;
-use quicksilver::load_file;
 
-use crate::util::file::load_file_sync;
 use crate::util::framebuffer::{PIXEL_SIZE, RGB};
 
 pub const TILE_SIZE: usize = 64;
 pub const TILE_COUNT: usize = 8;
+
+const TILED_BYTES: &[u8] = include_bytes!("../../include/test.tmx");
+const TEXTURES_BYTES: &[u8] = include_bytes!("../../include/wolftextures.png");
 
 pub struct Room {
     width: u32,
@@ -19,24 +18,20 @@ pub struct Room {
 
 impl Default for Room {
     fn default() -> Self {
-        Room::tiled_map("test.tmx")
+        Room::tiled_map()
     }
 }
 
 impl Room {
-    pub fn tiled_map(name: &str) -> Self {
-        let tiled_bytes = load_file_sync(name);
-        let result = tiled::parse(tiled_bytes.as_slice());
-        let tiled_map = result.expect(&format!("Failed to load {}", name));
-
+    pub fn tiled_map() -> Self {
+        let tiled_map = tiled::parse(TILED_BYTES).expect("Failed to load map");
         let map = tiled_map.layers[0]
             .tiles
             .iter()
             .flat_map(|row| row.iter().map(|tile| *tile as u8))
             .collect();
 
-        let tex_image_bytes = load_file_sync("wolftextures.png");
-        let tex_image = image::load_from_memory(&tex_image_bytes).expect("Failed to load textures");
+        let tex_image = image::load_from_memory(TEXTURES_BYTES).expect("Failed to load textures");
         let textures_width = tex_image.width() as usize;
         let textures = tex_image.to_rgb().into_raw();
 

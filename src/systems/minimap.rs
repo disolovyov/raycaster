@@ -35,7 +35,7 @@ impl<'a> System<'a> for MinimapSystem {
         }
 
         for (_, transform) in (&players, &transforms).join() {
-            let fov_color = RGB(255, 0, 0);
+            let fov_color = RGB(255, 255, 255);
             for ray in 0..VW {
                 let angle = transform.angle - FOV / 2.0 + FOV * ray as f32 / VW as f32;
 

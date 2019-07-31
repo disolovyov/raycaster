@@ -1,19 +1,18 @@
-use image::GenericImageView;
-
 use crate::util::framebuffer::{PIXEL_SIZE, RGB};
 
-pub const TILE_SIZE: usize = 64;
-pub const TILE_COUNT: usize = 8;
+pub const TILE_COUNT: u8 = 69;
+pub const TILE_LINE_COUNT: usize = 10;
+pub const TILE_SIZE: usize = 32;
+pub const TEXTURES_WIDTH: usize = TILE_SIZE * TILE_LINE_COUNT;
 
 const TILED_BYTES: &[u8] = include_bytes!("../../include/test.tmx");
-const TEXTURES_BYTES: &[u8] = include_bytes!("../../include/wolftextures.png");
+const TEXTURES_BYTES: &[u8] = include_bytes!("../../include/textures.png");
 
 pub struct Room {
     width: u32,
     height: u32,
     map: Vec<u8>,
     textures: Vec<u8>,
-    textures_width: usize,
 }
 
 impl Default for Room {
@@ -32,7 +31,6 @@ impl Room {
             .collect();
 
         let tex_image = image::load_from_memory(TEXTURES_BYTES).expect("Failed to load textures");
-        let textures_width = tex_image.width() as usize;
         let textures = tex_image.to_rgb().into_raw();
 
         Room {
@@ -40,7 +38,6 @@ impl Room {
             height: tiled_map.height,
             map,
             textures,
-            textures_width,
         }
     }
 
@@ -61,31 +58,34 @@ impl Room {
 
     pub fn get_color(&self, tile: u8) -> RGB {
         match tile {
-            1 => RGB(255, 0, 255),
-            2 => RGB(255, 0, 0),
-            4 => RGB(128, 128, 128),
-            6 => RGB(192, 192, 192),
-            7 => RGB(64, 64, 0),
+            1...TILE_COUNT => self.get_texture_pixel(tile, 1, 1),
             _ => RGB(0, 0, 0),
         }
     }
 
-    pub fn get_texture_column(&self, tile: u8, x: usize, column_height: usize) -> Vec<RGB> {
+    pub fn get_texture_column(&self, tile: u8, tile_x: usize, column_height: usize) -> Vec<RGB> {
         debug_assert!(
-            tile >= 1 && tile as usize <= TILE_COUNT,
+            tile >= 1 && tile <= TILE_COUNT,
             format!("No tile with id {}", tile)
         );
+
         let mut column = vec![RGB(0, 0, 0); column_height];
         for y in 0..column_height {
-            let tile_x = (tile - 1) as usize * TILE_SIZE + x;
-            let tile_y = y * TILE_SIZE / column_height;
-            let offset = (self.textures_width * tile_y + tile_x) * PIXEL_SIZE;
-            column[y] = RGB(
-                self.textures[offset],
-                self.textures[offset + 1],
-                self.textures[offset + 2],
-            );
+            let tile_y = TILE_SIZE * y / column_height;
+            column[y] = self.get_texture_pixel(tile, tile_x, tile_y);
         }
         column
+    }
+
+    pub fn get_texture_pixel(&self, tile: u8, x: usize, y: usize) -> RGB {
+        let tile_index = tile as usize - 1;
+        let tex_x = tile_index % TILE_LINE_COUNT * TILE_SIZE + x;
+        let tex_y = tile_index / TILE_LINE_COUNT * TILE_SIZE + y;
+        let offset = (tex_y * TEXTURES_WIDTH + tex_x) * PIXEL_SIZE;
+        RGB(
+            self.textures[offset],
+            self.textures[offset + 1],
+            self.textures[offset + 2],
+        )
     }
 }

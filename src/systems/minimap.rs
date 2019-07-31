@@ -2,7 +2,7 @@ use quicksilver::prelude::*;
 use specs::prelude::*;
 
 use crate::components::player::Player;
-use crate::components::transform::Transform;
+use crate::components::transform::Pose;
 use crate::config::{FOV, VH, VW};
 use crate::resources::renderer::{Layer, RenderItem, Renderable, Renderer};
 use crate::resources::room::Room;
@@ -15,13 +15,13 @@ const SCALE: u32 = 10;
 impl<'a> System<'a> for MinimapSystem {
     type SystemData = (
         ReadStorage<'a, Player>,
-        ReadStorage<'a, Transform>,
+        ReadStorage<'a, Pose>,
         Write<'a, Renderer>,
         Read<'a, Room>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (players, transforms, mut renderer, room) = data;
+        let (players, poses, mut renderer, room) = data;
 
         let width = room.width() * SCALE;
         let height = room.height() * SCALE;
@@ -34,15 +34,16 @@ impl<'a> System<'a> for MinimapSystem {
             }
         }
 
-        for (_, transform) in (&players, &transforms).join() {
+        if let Some((_, pose)) = (&players, &poses).join().next() {
             let fov_color = RGB(255, 255, 255);
-            for ray in 0..VW {
-                let angle = transform.angle - FOV / 2.0 + FOV * ray as f32 / VW as f32;
+            let pose_angle = pose.direction.angle().to_radians();
+            for ray in [0, VW - 1].iter() {
+                let angle = pose_angle - FOV / 2.0 + FOV * *ray as f32 / VW as f32;
 
-                for i in 0..20 {
+                for i in 0..200 {
                     let t = i as f32 * 0.1;
-                    let x = (transform.position.x + t * angle.cos()) * SCALE as f32;
-                    let y = (transform.position.y + t * angle.sin()) * SCALE as f32;
+                    let x = (pose.position.x + t * angle.cos()) * SCALE as f32;
+                    let y = (pose.position.y + t * angle.sin()) * SCALE as f32;
                     if x >= 0.0 && x < width as f32 && y >= 0.0 && y < height as f32 {
                         framebuffer.draw_pixel(x as u32, y as u32, fov_color);
                     }

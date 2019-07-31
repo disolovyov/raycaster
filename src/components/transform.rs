@@ -2,38 +2,36 @@ use quicksilver::prelude::*;
 use specs::prelude::*;
 
 #[derive(Debug)]
-pub struct Transform {
+pub struct Pose {
     pub position: Vector,
-    pub angle: f32,
+    pub direction: Vector,
 }
 
-impl Component for Transform {
+impl Component for Pose {
     type Storage = VecStorage<Self>;
 }
 
-impl Transform {
-    pub fn new(position: Vector) -> Transform {
-        Transform {
+impl Pose {
+    pub fn new(position: Vector) -> Pose {
+        Pose {
             position,
-            angle: 0.0,
+            direction: Vector::new(1, 0),
         }
     }
 
     pub fn left(&mut self, delta: f32) {
-        self.angle -= delta;
+        self.direction = Transform::rotate(delta) * self.direction
     }
 
     pub fn right(&mut self, delta: f32) {
-        self.angle += delta;
+        self.direction = Transform::rotate(-delta) * self.direction
     }
 
     pub fn forward(&mut self, delta: f32) {
-        self.position.x += self.angle.cos() * delta;
-        self.position.y += self.angle.sin() * delta;
+        self.position += Transform::scale(Vector::new(delta, delta)) * self.direction;
     }
 
     pub fn back(&mut self, delta: f32) {
-        self.position.x -= self.angle.cos() * delta;
-        self.position.y -= self.angle.sin() * delta;
+        self.position -= Transform::scale(Vector::new(delta, delta)) * self.direction;
     }
 }

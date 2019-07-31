@@ -63,20 +63,6 @@ impl Room {
         }
     }
 
-    pub fn get_texture_column(&self, tile: u8, tile_x: usize, column_height: usize) -> Vec<RGB> {
-        debug_assert!(
-            tile >= 1 && tile <= TILE_COUNT,
-            format!("No tile with id {}", tile)
-        );
-
-        let mut column = vec![RGB(0, 0, 0); column_height];
-        for y in 0..column_height {
-            let tile_y = TILE_SIZE * y / column_height;
-            column[y] = self.get_texture_pixel(tile, tile_x, tile_y);
-        }
-        column
-    }
-
     pub fn get_texture_pixel(&self, tile: u8, x: usize, y: usize) -> RGB {
         let tile_index = tile as usize - 1;
         let tex_x = tile_index % TILE_LINE_COUNT * TILE_SIZE + x;

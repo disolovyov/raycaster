@@ -4,6 +4,12 @@ use quicksilver::Result;
 #[derive(Clone, Copy, Debug)]
 pub struct RGB(pub u8, pub u8, pub u8);
 
+impl RGB {
+    pub fn darken(&self) -> RGB {
+        RGB(self.0 / 2, self.1 / 2, self.2 / 2)
+    }
+}
+
 pub const PIXEL_SIZE: usize = 3;
 
 pub struct Framebuffer {

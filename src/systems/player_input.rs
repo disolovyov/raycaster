@@ -1,7 +1,7 @@
 use specs::prelude::*;
 
 use crate::components::player::Player;
-use crate::components::transform::Transform;
+use crate::components::transform::Pose;
 use crate::config::{TURN_SPEED, WALK_SPEED};
 use crate::resources::input::{Binding, Input};
 
@@ -10,24 +10,30 @@ pub struct PlayerInputSystem;
 impl<'a> System<'a> for PlayerInputSystem {
     type SystemData = (
         ReadStorage<'a, Player>,
-        WriteStorage<'a, Transform>,
+        WriteStorage<'a, Pose>,
         Read<'a, Input>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (players, mut transforms, input) = data;
+        let (players, mut poses, input) = data;
 
-        for (_, transform) in (&players, &mut transforms).join() {
-            if input.is_down(Binding::MoveForward) {
-                transform.forward(WALK_SPEED);
-            } else if input.is_down(Binding::MoveBack) {
-                transform.back(WALK_SPEED);
-            }
-            if input.is_down(Binding::TurnLeft) {
-                transform.left(TURN_SPEED);
-            } else if input.is_down(Binding::TurnRight) {
-                transform.right(TURN_SPEED);
-            }
+        if let Some((_, pose)) = (&players, &mut poses).join().next() {
+            PlayerInputSystem::handle_input(pose, &input);
+        }
+    }
+}
+
+impl PlayerInputSystem {
+    fn handle_input(pose: &mut Pose, input: &Input) {
+        if input.is_down(Binding::MoveForward) {
+            pose.forward(WALK_SPEED);
+        } else if input.is_down(Binding::MoveBack) {
+            pose.back(WALK_SPEED);
+        }
+        if input.is_down(Binding::TurnLeft) {
+            pose.left(TURN_SPEED);
+        } else if input.is_down(Binding::TurnRight) {
+            pose.right(TURN_SPEED);
         }
     }
 }

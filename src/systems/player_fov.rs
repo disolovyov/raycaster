@@ -48,20 +48,17 @@ impl PlayerFovSystem {
                     continue;
                 }
 
-                let mut column_height = (VW as f32 / (t * (angle - transform.angle).cos())) as u32;
-                if column_height > VH {
-                    column_height = VH;
-                }
+                let column_height = (VW as f32 / (t * (angle - transform.angle).cos())) as i32;
 
                 let texture_x = PlayerFovSystem::get_texture_x(cx, cy);
                 let texture_column =
                     room.get_texture_column(tile, texture_x as usize, column_height as usize);
 
-                let column_start = VH / 2 - column_height / 2;
+                let column_start = VH as i32 / 2 - column_height / 2;
                 for column_y in 0..column_height {
                     let y = column_start + column_y;
-                    if y < VH {
-                        framebuffer.draw_pixel(ray, y, texture_column[column_y as usize])
+                    if y >= 0 && y < VH as i32 {
+                        framebuffer.draw_pixel(ray, y as u32, texture_column[column_y as usize])
                     }
                 }
 

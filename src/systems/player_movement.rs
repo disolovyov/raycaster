@@ -2,7 +2,7 @@ use specs::prelude::*;
 
 use crate::components::player::Player;
 use crate::components::transform::Pose;
-use crate::config::{TURN_SPEED, WALK_SPEED};
+use crate::config::{STRAFE_SPEED, TURN_SPEED, WALK_SPEED};
 use crate::resources::input::{Binding, Input};
 use crate::resources::room::Room;
 
@@ -27,13 +27,20 @@ impl<'a> System<'a> for PlayerInputSystem {
 
 fn handle_input(pose: &mut Pose, input: &Input, room: &Room) {
     if input.is_down(Binding::MoveForward) {
-        pose.forward(WALK_SPEED, room);
+        pose.move_forward(WALK_SPEED, room);
     } else if input.is_down(Binding::MoveBack) {
-        pose.back(WALK_SPEED, room);
+        pose.move_back(WALK_SPEED, room);
     }
+
+    if input.is_down(Binding::StrafeLeft) {
+        pose.strafe_left(STRAFE_SPEED, room);
+    } else if input.is_down(Binding::StrafeRight) {
+        pose.strafe_right(STRAFE_SPEED, room);
+    }
+
     if input.is_down(Binding::TurnLeft) {
-        pose.left(TURN_SPEED);
+        pose.turn_left(TURN_SPEED);
     } else if input.is_down(Binding::TurnRight) {
-        pose.right(TURN_SPEED);
+        pose.turn_right(TURN_SPEED);
     }
 }

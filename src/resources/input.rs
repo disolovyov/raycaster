@@ -2,10 +2,14 @@ use std::collections::HashMap;
 
 use quicksilver::prelude::*;
 
+use crate::resources::input::Binding::*;
+
 #[derive(PartialEq, Eq, Hash)]
 pub enum Binding {
     MoveForward,
     MoveBack,
+    StrafeLeft,
+    StrafeRight,
     TurnLeft,
     TurnRight,
 }
@@ -18,14 +22,20 @@ pub struct Input {
 impl Input {
     pub fn update(&mut self, window: &Window) {
         let keyboard = window.keyboard();
-        self.keys
-            .insert(Binding::MoveForward, keyboard[Key::W].is_down());
-        self.keys
-            .insert(Binding::MoveBack, keyboard[Key::S].is_down());
-        self.keys
-            .insert(Binding::TurnLeft, keyboard[Key::A].is_down());
-        self.keys
-            .insert(Binding::TurnRight, keyboard[Key::D].is_down());
+        let any_down = |bindings: &[Key]| {
+            bindings
+                .iter()
+                .map(|k| keyboard[*k])
+                .find(|bs| bs.is_down())
+                .is_some()
+        };
+
+        self.keys.insert(MoveForward, any_down(&[Key::W, Key::Up]));
+        self.keys.insert(MoveBack, any_down(&[Key::S, Key::Down]));
+        self.keys.insert(StrafeLeft, any_down(&[Key::A]));
+        self.keys.insert(StrafeRight, any_down(&[Key::D]));
+        self.keys.insert(TurnLeft, any_down(&[Key::Q, Key::Left]));
+        self.keys.insert(TurnRight, any_down(&[Key::E, Key::Right]));
     }
 
     pub fn is_down(&self, binding: Binding) -> bool {

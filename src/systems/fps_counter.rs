@@ -13,7 +13,7 @@ impl<'a> System<'a> for FpsCounterSystem {
         let (mut renderer, fps) = data;
 
         let text = format!("FPS: {}", fps.current() as u64);
-        let font_style = FontStyle::new(20.0, Color::YELLOW);
+        let font_style = FontStyle::new(20., Color::YELLOW);
         renderer.add(RenderItem {
             renderable: Renderable::Text(text, font_style),
             position: Vector::new(10, 5),

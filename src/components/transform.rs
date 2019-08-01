@@ -43,10 +43,7 @@ impl Pose {
     }
 
     fn move_to(&mut self, delta: Vector, room: &Room) {
-        let target = self.position + delta;
-        if !room.is_solid(target.x as u32, target.y as u32) {
-            self.position = target;
-        }
+        self.position = room.move_to(self.position, delta);
     }
 
     pub fn turn_left(&mut self, delta: f32) {

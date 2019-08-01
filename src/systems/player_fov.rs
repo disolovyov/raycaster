@@ -8,6 +8,7 @@ use crate::resources::renderer::{Layer, RenderItem, Renderable, Renderer};
 use crate::resources::room::{Room, TILE_SIZE};
 use crate::util::framebuffer::Framebuffer;
 use crate::util::transform::TransformExt;
+use crate::util::vector::VectorExt;
 
 pub struct PlayerFovSystem;
 
@@ -41,30 +42,29 @@ impl PlayerFovSystem {
         for ray in 0..VW {
             // Ray direction from (0, 0) to camera plane
             let ray_dir = Transform::translate(pose.direction)
-                * Transform::scale_ratio(2.0 * ray as f32 / VW as f32 - 1.0) // Screen x in (-1, 1)
+                * Transform::scale_ratio(2. * ray as f32 / VW as f32 - 1.) // Screen x in (-1, 1)
                 * Transform::rotate(pose.direction.angle())
                 * Vector::new(0, -0.66); // Camera plane relative to (0, 1)
 
             // Which cell of the map we're in
-            let mut map_x = pose.position.x.trunc();
-            let mut map_y = pose.position.y.trunc();
+            let mut map_pos = pose.position.trunc();
 
             // Length of ray from one x/y-side to next x/y-side
-            let delta_dist_x = (1.0 / ray_dir.x).abs();
-            let delta_dist_y = (1.0 / ray_dir.y).abs();
+            let delta_dist_x = (1. / ray_dir.x).abs();
+            let delta_dist_y = (1. / ray_dir.y).abs();
 
             // Direction to step in
             let step_x = ray_dir.x.signum();
             let step_y = ray_dir.y.signum();
 
             // Length of ray from current position to next x/y-side
-            let mut side_dist_x = match ray_dir.x < 0.0 {
-                true => (pose.position.x - map_x) * delta_dist_x,
-                false => (map_x + 1.0 - pose.position.x) * delta_dist_x,
+            let mut side_dist_x = match ray_dir.x < 0. {
+                true => (pose.position.x - map_pos.x) * delta_dist_x,
+                false => (map_pos.x + 1. - pose.position.x) * delta_dist_x,
             };
-            let mut side_dist_y = match ray_dir.y < 0.0 {
-                true => (pose.position.y - map_y) * delta_dist_y,
-                false => (map_y + 1.0 - pose.position.y) * delta_dist_y,
+            let mut side_dist_y = match ray_dir.y < 0. {
+                true => (pose.position.y - map_pos.y) * delta_dist_y,
+                false => (map_pos.y + 1. - pose.position.y) * delta_dist_y,
             };
 
             let mut y_side: bool; // Which wall was hit?
@@ -73,14 +73,14 @@ impl PlayerFovSystem {
             loop {
                 if side_dist_x < side_dist_y {
                     side_dist_x += delta_dist_x;
-                    map_x += step_x;
+                    map_pos.x += step_x;
                     y_side = false;
                 } else {
                     side_dist_y += delta_dist_y;
-                    map_y += step_y;
+                    map_pos.y += step_y;
                     y_side = true;
                 }
-                if room.is_solid(map_x as u32, map_y as u32) {
+                if room.is_solid(&map_pos) {
                     break;
                 }
             }
@@ -88,10 +88,10 @@ impl PlayerFovSystem {
             // Calculate distance projected on camera direction
             // No fisheye correction needed
             let perp_wall_dist = match y_side {
-                false => (map_x - pose.position.x + (1.0 - step_x) / 2.0) / ray_dir.x,
-                true => (map_y - pose.position.y + (1.0 - step_y) / 2.0) / ray_dir.y,
+                false => (map_pos.x - pose.position.x + (1. - step_x) / 2.) / ray_dir.x,
+                true => (map_pos.y - pose.position.y + (1. - step_y) / 2.) / ray_dir.y,
             };
-            if perp_wall_dist <= 0.0 {
+            if perp_wall_dist <= 0.1 {
                 continue;
             }
 
@@ -106,7 +106,7 @@ impl PlayerFovSystem {
             }
 
             // Render texture column
-            let tile = room.get(map_x as u32, map_y as u32);
+            let tile = room.get_tile(&map_pos);
             let vh = VH as i32;
             let column_height = (VH as f32 / perp_wall_dist) as i32;
             let column_start = (vh - column_height) / 2;

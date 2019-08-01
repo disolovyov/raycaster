@@ -95,12 +95,6 @@ impl PlayerFovSystem {
                 continue;
             }
 
-            // Calculate texture column span
-            let column_height = (VH as f32 / perp_wall_dist) as u32;
-            let column_vh = VH as i32;
-            let column_start = ((column_vh - column_height as i32) / 2).max(0) as u32;
-            let column_end = ((column_vh + column_height as i32) / 2).min(column_vh - 1) as u32;
-
             // Calculate x coordinate on the wall texture
             let wall_hit = match y_side {
                 false => (pose.position.y + perp_wall_dist * ray_dir.y).fract(),
@@ -113,14 +107,22 @@ impl PlayerFovSystem {
 
             // Render texture column
             let tile = room.get(map_x as u32, map_y as u32);
-            for y in column_start..column_end {
-                let tile_y = TILE_SIZE as u32 * (y - column_start) / column_height;
+            let vh = VH as i32;
+            let column_height = (VH as f32 / perp_wall_dist) as i32;
+            let column_start = (vh - column_height) / 2;
+
+            let y_start = column_start.max(0);
+            let y_end = ((vh + column_height) / 2).min(vh - 1);
+
+            for y in y_start..y_end {
+                let column_y = y - column_start;
+                let tile_y = TILE_SIZE as i32 * column_y / column_height;
                 let pixel = room.get_texture_pixel(tile, tile_x as usize, tile_y as usize);
                 let color = match y_side {
                     false => pixel,
                     true => pixel.darken(),
                 };
-                framebuffer.draw_pixel(ray, y, color);
+                framebuffer.draw_pixel(ray, y as u32, color);
             }
         }
         framebuffer

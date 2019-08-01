@@ -7,7 +7,7 @@ use crate::config::{VH, VW};
 use crate::resources::renderer::{Layer, RenderItem, Renderable, Renderer};
 use crate::resources::room::{Room, TILE_SIZE};
 use crate::util::framebuffer::Framebuffer;
-use crate::util::math::transform_scale;
+use crate::util::transform::TransformExt;
 
 pub struct PlayerFovSystem;
 
@@ -41,7 +41,7 @@ impl PlayerFovSystem {
         for ray in 0..VW {
             // Ray direction from (0, 0) to camera plane
             let ray_dir = Transform::translate(pose.direction)
-                * transform_scale(2.0 * ray as f32 / VW as f32 - 1.0) // Screen x in (-1, 1)
+                * Transform::scale_ratio(2.0 * ray as f32 / VW as f32 - 1.0) // Screen x in (-1, 1)
                 * Transform::rotate(pose.direction.angle())
                 * Vector::new(0, -0.66); // Camera plane relative to (0, 1)
 
@@ -80,7 +80,7 @@ impl PlayerFovSystem {
                     map_y += step_y;
                     y_side = true;
                 }
-                if room.get(map_x as u32, map_y as u32) != 0 {
+                if room.is_solid(map_x as u32, map_y as u32) {
                     break;
                 }
             }

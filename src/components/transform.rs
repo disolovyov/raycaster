@@ -1,6 +1,9 @@
 use quicksilver::prelude::*;
 use specs::prelude::*;
 
+use crate::resources::room::Room;
+use crate::util::transform::TransformExt;
+
 #[derive(Debug)]
 pub struct Pose {
     pub position: Vector,
@@ -27,11 +30,17 @@ impl Pose {
         self.direction = Transform::rotate(-delta) * self.direction
     }
 
-    pub fn forward(&mut self, delta: f32) {
-        self.position += Transform::scale(Vector::new(delta, delta)) * self.direction;
+    pub fn forward(&mut self, delta: f32, room: &Room) {
+        let position = self.position + Transform::scale_ratio(delta) * self.direction;
+        if !room.is_solid(position.x as u32, position.y as u32) {
+            self.position = position;
+        }
     }
 
-    pub fn back(&mut self, delta: f32) {
-        self.position -= Transform::scale(Vector::new(delta, delta)) * self.direction;
+    pub fn back(&mut self, delta: f32, room: &Room) {
+        let position = self.position - Transform::scale_ratio(delta) * self.direction;
+        if !room.is_solid(position.x as u32, position.y as u32) {
+            self.position = position;
+        }
     }
 }

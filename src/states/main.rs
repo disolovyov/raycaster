@@ -9,7 +9,7 @@ use crate::resources::renderer::Renderer;
 use crate::systems::fps_counter::FpsCounterSystem;
 use crate::systems::minimap::MinimapSystem;
 use crate::systems::player_fov::PlayerFovSystem;
-use crate::systems::player_input::PlayerInputSystem;
+use crate::systems::player_movement::PlayerInputSystem;
 
 pub struct MainState {
     assets: Assets,

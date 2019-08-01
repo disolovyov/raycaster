@@ -49,6 +49,10 @@ impl Room {
         self.height
     }
 
+    pub fn is_solid(&self, x: u32, y: u32) -> bool {
+        self.get(x, y) != 0
+    }
+
     pub fn get(&self, x: u32, y: u32) -> u8 {
         debug_assert!(x < self.width, "x = {} out of bounds", x);
         debug_assert!(y < self.height, "y = {} out of bounds", y);

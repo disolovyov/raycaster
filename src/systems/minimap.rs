@@ -3,14 +3,14 @@ use specs::prelude::*;
 
 use crate::components::player::Player;
 use crate::components::transform::Pose;
-use crate::config::{FOV, VH, VW};
+use crate::config::{VH, VW};
 use crate::resources::renderer::{Layer, RenderItem, Renderable, Renderer};
 use crate::resources::room::Room;
 use crate::util::framebuffer::{Framebuffer, RGB};
 
 pub struct MinimapSystem;
 
-const SCALE: u32 = 10;
+const SCALE: u32 = 8;
 
 impl<'a> System<'a> for MinimapSystem {
     type SystemData = (
@@ -35,20 +35,7 @@ impl<'a> System<'a> for MinimapSystem {
         }
 
         if let Some((_, pose)) = (&players, &poses).join().next() {
-            let fov_color = RGB(255, 255, 255);
-            let pose_angle = pose.direction.angle().to_radians();
-            for ray in [0, VW - 1].iter() {
-                let angle = pose_angle - FOV / 2.0 + FOV * *ray as f32 / VW as f32;
-
-                for i in 0..200 {
-                    let t = i as f32 * 0.1;
-                    let x = (pose.position.x + t * angle.cos()) * SCALE as f32;
-                    let y = (pose.position.y + t * angle.sin()) * SCALE as f32;
-                    if x >= 0.0 && x < width as f32 && y >= 0.0 && y < height as f32 {
-                        framebuffer.draw_pixel(x as u32, y as u32, fov_color);
-                    }
-                }
-            }
+            draw_player(&mut framebuffer, pose)
         }
 
         renderer.add(RenderItem {
@@ -57,4 +44,11 @@ impl<'a> System<'a> for MinimapSystem {
             layer: Layer::UI,
         })
     }
+}
+
+fn draw_player(framebuffer: &mut Framebuffer, pose: &Pose) {
+    let x = (pose.position.x * SCALE as f32) as u32;
+    let y = (pose.position.y * SCALE as f32) as u32;
+    let color = RGB(255, 255, 255);
+    framebuffer.draw_rect(x - 1, y - 1, 3, 3, color);
 }

@@ -7,7 +7,7 @@ use crate::config::{VH, VW};
 use crate::resources::renderer::{Layer, RenderItem, Renderable, Renderer};
 use crate::resources::room::Room;
 use crate::resources::tilesets::Tilesets;
-use crate::util::framebuffer::Framebuffer;
+use crate::util::framebuffer::{Framebuffer, RGB};
 use crate::util::tileset::Tileset;
 use crate::util::transform::TransformExt;
 use crate::util::vector::VectorExt;
@@ -119,6 +119,10 @@ impl PlayerFovSystem {
             let y_start = column_start.max(0);
             let y_end = ((vh + column_height) / 2).min(vh - 1);
 
+            // Draw column
+            for y in 0..y_start {
+                framebuffer.draw_pixel(ray, y as u32, RGB(56, 56, 56));
+            }
             for y in y_start..y_end {
                 let column_y = y - column_start;
                 let tile_y = walls.tile_height() as i32 * column_y / column_height;
@@ -128,6 +132,9 @@ impl PlayerFovSystem {
                     true => pixel.darken(),
                 };
                 framebuffer.draw_pixel(ray, y as u32, color);
+            }
+            for y in y_end..vh {
+                framebuffer.draw_pixel(ray, y as u32, RGB(113, 113, 113));
             }
         }
         framebuffer

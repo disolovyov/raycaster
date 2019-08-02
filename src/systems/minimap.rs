@@ -11,7 +11,7 @@ use crate::util::framebuffer::{Framebuffer, RGB};
 
 pub struct MinimapSystem;
 
-const SCALE: u32 = 8;
+const SCALE: u32 = 6;
 
 impl<'a> System<'a> for MinimapSystem {
     type SystemData = (

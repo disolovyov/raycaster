@@ -33,12 +33,12 @@ impl Pose {
     }
 
     pub fn strafe_left(&mut self, delta: f32, room: &Room) {
-        let delta = Transform::scale_ratio(delta) * Transform::rotate(90) * self.direction;
+        let delta = Transform::scale_ratio(delta) * Transform::rotate(-90) * self.direction;
         self.move_to(delta, room);
     }
 
     pub fn strafe_right(&mut self, delta: f32, room: &Room) {
-        let delta = Transform::scale_ratio(delta) * Transform::rotate(-90) * self.direction;
+        let delta = Transform::scale_ratio(delta) * Transform::rotate(90) * self.direction;
         self.move_to(delta, room);
     }
 
@@ -47,10 +47,10 @@ impl Pose {
     }
 
     pub fn turn_left(&mut self, delta: f32) {
-        self.direction = Transform::rotate(delta) * self.direction
+        self.direction = Transform::rotate(-delta) * self.direction
     }
 
     pub fn turn_right(&mut self, delta: f32) {
-        self.direction = Transform::rotate(-delta) * self.direction
+        self.direction = Transform::rotate(delta) * self.direction
     }
 }

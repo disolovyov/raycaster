@@ -49,7 +49,7 @@ impl PlayerFovSystem {
             let ray_dir = Transform::translate(pose.direction)
                 * Transform::scale_ratio(2. * ray as f32 / VW as f32 - 1.) // Screen x in (-1, 1)
                 * Transform::rotate(pose.direction.angle())
-                * Vector::new(0, -0.66); // Camera plane relative to (0, 1)
+                * Vector::new(0, 0.66); // Camera plane relative to (0, 1)
 
             // Which cell of the map we're in
             let mut map_pos = pose.position.trunc();

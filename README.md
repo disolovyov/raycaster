@@ -12,4 +12,4 @@ cargo run --release
 
 ## Credits
 
-- Textures by [Jestan](https://twitter.com/jestanpixels)
+- Textures and sprites by [mutantleg](https://mutantleg.itch.io/)

@@ -5,8 +5,10 @@ use crate::components::player::Player;
 use crate::components::transform::Pose;
 use crate::config::{VH, VW};
 use crate::resources::renderer::{Layer, RenderItem, Renderable, Renderer};
-use crate::resources::room::{Room, TILE_SIZE};
+use crate::resources::room::Room;
+use crate::resources::tilesets::Tilesets;
 use crate::util::framebuffer::Framebuffer;
+use crate::util::tileset::Tileset;
 use crate::util::transform::TransformExt;
 use crate::util::vector::VectorExt;
 
@@ -18,13 +20,16 @@ impl<'a> System<'a> for PlayerFovSystem {
         ReadStorage<'a, Pose>,
         Write<'a, Renderer>,
         Read<'a, Room>,
+        Read<'a, Tilesets>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (players, poses, mut renderer, room) = data;
+        let (players, poses, mut renderer, room, tilesets) = data;
+
+        let walls = tilesets.walls();
 
         if let Some((_, pose)) = (&players, &poses).join().next() {
-            let framebuffer = PlayerFovSystem::render(pose, &room);
+            let framebuffer = PlayerFovSystem::render(pose, &room, walls);
             renderer.add(RenderItem {
                 renderable: Renderable::Framebuffer(framebuffer),
                 position: Vector::ZERO,
@@ -37,7 +42,7 @@ impl<'a> System<'a> for PlayerFovSystem {
 impl PlayerFovSystem {
     // See Lode's raycasting tutorial:
     // https://lodev.org/cgtutor/raycasting.html
-    fn render(pose: &Pose, room: &Room) -> Framebuffer {
+    fn render(pose: &Pose, room: &Room, walls: &Tileset) -> Framebuffer {
         let mut framebuffer = Framebuffer::new(VW, VH);
         for ray in 0..VW {
             // Ray direction from (0, 0) to camera plane
@@ -100,9 +105,9 @@ impl PlayerFovSystem {
                 false => (pose.position.y + perp_wall_dist * ray_dir.y).fract(),
                 true => (pose.position.x + perp_wall_dist * ray_dir.x).fract(),
             };
-            let mut tile_x = (wall_hit * TILE_SIZE as f32) as i32;
+            let mut tile_x = (wall_hit * walls.tile_width() as f32) as i32;
             if tile_x < 0 {
-                tile_x += TILE_SIZE as i32;
+                tile_x += walls.tile_width() as i32;
             }
 
             // Render texture column
@@ -116,8 +121,8 @@ impl PlayerFovSystem {
 
             for y in y_start..y_end {
                 let column_y = y - column_start;
-                let tile_y = TILE_SIZE as i32 * column_y / column_height;
-                let pixel = room.get_texture_pixel(tile, tile_x as usize, tile_y as usize);
+                let tile_y = walls.tile_height() as i32 * column_y / column_height;
+                let pixel = walls.get_pixel(tile, tile_x as u32, tile_y as u32);
                 let color = match y_side {
                     false => pixel,
                     true => pixel.darken(),

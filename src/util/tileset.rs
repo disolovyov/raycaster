@@ -1,6 +1,5 @@
 use image::GenericImageView;
 
-use crate::components::sprite::Sprite;
 use crate::util::rgb::RGB;
 
 pub struct Tileset {

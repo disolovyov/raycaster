@@ -34,6 +34,11 @@ pub fn load_map(world: &mut World) {
     create_prop(
         world,
         Sprite::new(TilesetType::Sprites64, vec![13]),
+        Vector::new(6.5, 1.5),
+    );
+    create_prop(
+        world,
+        Sprite::new(TilesetType::Sprites64, vec![13]),
         Vector::new(6.5, 2.5),
     );
 }

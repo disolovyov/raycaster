@@ -4,8 +4,11 @@ version = "0.1.0"
 edition = "2018"
 
 [dependencies]
-quicksilver = "0.3.16"
 image = "*"
+
+[dependencies.quicksilver]
+version = "0.3.18"
+features = []
 
 [dependencies.specs]
 version = "0.15.0"

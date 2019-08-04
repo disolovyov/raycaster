@@ -8,7 +8,7 @@ use crate::config::{VH, VW};
 use crate::resources::renderer::{Layer, RenderItem, Renderable, Renderer};
 use crate::resources::room::Room;
 use crate::resources::tilesets::Tilesets;
-use crate::systems::player_fov::sprite::draw_sprite;
+use crate::systems::player_fov::sprite::draw_sprites;
 use crate::systems::player_fov::walls::draw_walls;
 use crate::util::framebuffer::Framebuffer;
 
@@ -32,17 +32,24 @@ impl<'a> System<'a> for PlayerFovSystem {
 
         if let Some((_, player_pose)) = (&players, &poses).join().next() {
             let mut framebuffer = Framebuffer::new(VW, VH);
+            let mut zbuffer: Vec<f32> = vec![0.; VW as usize];
 
-            draw_walls(&mut framebuffer, player_pose, &room, &tilesets);
-            for (sprite, sprite_pose) in (&sprites, &poses).join() {
-                draw_sprite(
-                    &mut framebuffer,
-                    sprite,
-                    sprite_pose,
-                    player_pose,
-                    &tilesets,
-                );
-            }
+            draw_walls(
+                &mut framebuffer,
+                &mut zbuffer,
+                player_pose,
+                &room,
+                &tilesets,
+            );
+
+            let mut sprites: Vec<(&Sprite, &Pose)> = (&sprites, &poses).join().collect();
+            draw_sprites(
+                &mut framebuffer,
+                &zbuffer,
+                &mut sprites,
+                player_pose,
+                &tilesets,
+            );
 
             renderer.add(RenderItem {
                 renderable: Renderable::Framebuffer(framebuffer),

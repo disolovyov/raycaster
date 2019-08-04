@@ -10,9 +10,16 @@ use crate::util::vector::VectorExt;
 
 // See Lode's raycasting tutorial:
 // https://lodev.org/cgtutor/raycasting.html
-pub fn draw_walls(framebuffer: &mut Framebuffer, pose: &Pose, room: &Room, tilesets: &Tilesets) {
+pub fn draw_walls(
+    framebuffer: &mut Framebuffer,
+    zbuffer: &mut [f32],
+    pose: &Pose,
+    room: &Room,
+    tilesets: &Tilesets,
+) {
     let mut fov_renderer = FovRenderer {
         framebuffer,
+        zbuffer,
         pose,
         room,
         tilesets,
@@ -22,6 +29,7 @@ pub fn draw_walls(framebuffer: &mut Framebuffer, pose: &Pose, room: &Room, tiles
 
 struct FovRenderer<'a> {
     framebuffer: &'a mut Framebuffer,
+    zbuffer: &'a mut [f32],
     pose: &'a Pose,
     room: &'a Room,
     tilesets: &'a Tilesets,
@@ -29,7 +37,7 @@ struct FovRenderer<'a> {
 
 struct RaycastResult {
     map_pos: Vector,
-    wall_distance: f32,
+    distance: f32,
     y_side: bool,
 }
 
@@ -47,14 +55,12 @@ impl<'a> FovRenderer<'a> {
                 * Vector::new(0, 0.66); // Camera plane relative to (0, 1)
 
             let raycast_result = self.raycast(ray_dir);
-            if raycast_result.wall_distance <= 0.1 {
-                continue;
-            }
+            self.zbuffer[ray as usize] = raycast_result.distance;
 
             // Calculate x coordinate on the wall texture
             let wall_hit = match raycast_result.y_side {
-                false => (self.pose.position.y + raycast_result.wall_distance * ray_dir.y).fract(),
-                true => (self.pose.position.x + raycast_result.wall_distance * ray_dir.x).fract(),
+                false => (self.pose.position.y + raycast_result.distance * ray_dir.y).fract(),
+                true => (self.pose.position.x + raycast_result.distance * ray_dir.x).fract(),
             };
             let mut tile_x = (wall_hit * walls.tile_width() as f32) as i32;
             if tile_x < 0 {
@@ -63,7 +69,7 @@ impl<'a> FovRenderer<'a> {
 
             // Render texture column
             let tile = self.room.get_tile(&raycast_result.map_pos);
-            let column_height = (fh as f32 / raycast_result.wall_distance) as i32;
+            let column_height = (fh as f32 / raycast_result.distance) as i32;
             let column_start = (fh - column_height) / 2;
 
             let y_start = column_start.max(0);
@@ -140,7 +146,7 @@ impl<'a> FovRenderer<'a> {
         };
 
         RaycastResult {
-            wall_distance,
+            distance: wall_distance,
             y_side,
             map_pos,
         }

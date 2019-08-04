@@ -1,7 +1,7 @@
 use specs::prelude::*;
 
 use crate::components::player::Player;
-use crate::components::transform::Pose;
+use crate::components::pose::Pose;
 use crate::config::{STRAFE_SPEED, TURN_SPEED, WALK_SPEED};
 use crate::resources::input::{Binding, Input};
 use crate::resources::room::Room;

@@ -2,8 +2,6 @@ use quicksilver::prelude::*;
 
 use crate::config::PLAYER_RADIUS;
 
-const TILED_BYTES: &[u8] = include_bytes!("../../include/test.tmx");
-
 pub struct Room {
     width: u32,
     height: u32,
@@ -12,24 +10,19 @@ pub struct Room {
 
 impl Default for Room {
     fn default() -> Self {
-        Room::tiled_map()
+        Room {
+            width: 0,
+            height: 0,
+            map: vec![],
+        }
     }
 }
 
 impl Room {
-    pub fn tiled_map() -> Self {
-        let tiled_map = tiled::parse(TILED_BYTES).expect("Failed to load map");
-        let map = tiled_map.layers[0]
-            .tiles
-            .iter()
-            .flat_map(|row| row.iter().map(|tile| *tile as u8))
-            .collect();
-
-        Room {
-            width: tiled_map.width,
-            height: tiled_map.height,
-            map,
-        }
+    pub fn set_map(&mut self, width: u32, height: u32, map: &[u8]) {
+        self.width = width;
+        self.height = height;
+        self.map = map.to_vec();
     }
 
     pub fn width(&self) -> u32 {
@@ -53,14 +46,6 @@ impl Room {
         self.map[(self.width * y + x) as usize]
     }
 
-    pub fn is_solid(&self, position: &Vector) -> bool {
-        self.get_tile(&position) != 0
-    }
-
-    pub fn is_solid_xy(&self, x: u32, y: u32) -> bool {
-        self.get_tile_xy(x, y) != 0
-    }
-
     pub fn move_to(&self, from: Vector, delta: Vector) -> Vector {
         let mut to = from + delta;
 
@@ -77,10 +62,10 @@ impl Room {
             * Vector::new(PLAYER_RADIUS, 0);
 
         // Rollback x or y on collision
-        if self.is_solid_xy(to_buf.x as u32, from.y as u32) {
+        if self.get_tile_xy(to_buf.x as u32, from.y as u32) != 0 {
             to.x = from.x;
         }
-        if self.is_solid_xy(from.x as u32, to_buf.y as u32) {
+        if self.get_tile_xy(from.x as u32, to_buf.y as u32) != 0 {
             to.y = from.y;
         }
 

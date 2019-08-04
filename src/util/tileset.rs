@@ -1,6 +1,7 @@
 use image::GenericImageView;
 
-use crate::util::framebuffer::{PIXEL_SIZE, RGB};
+use crate::components::sprite::Sprite;
+use crate::util::rgb::RGB;
 
 pub struct Tileset {
     tile_width: u32,
@@ -16,7 +17,7 @@ impl Tileset {
             tile_width,
             tile_height,
             tile_x_count: tex_image.width() / tile_width,
-            data: tex_image.to_rgb().into_raw(),
+            data: tex_image.to_rgba().into_raw(),
         }
     }
 
@@ -28,15 +29,29 @@ impl Tileset {
         self.tile_height
     }
 
-    pub fn get_pixel(&self, tile: u8, x: u32, y: u32) -> RGB {
+    pub fn tile_ratio(&self) -> f32 {
+        self.tile_width as f32 / self.tile_height as f32
+    }
+
+    pub fn get_pixel(&self, tile: u8, x: u32, y: u32) -> Option<RGB> {
+        if tile == 0 || x >= self.tile_width || y >= self.tile_height {
+            return None;
+        }
+
         let tile_index = tile as u32 - 1;
         let tex_x = tile_index % self.tile_x_count * self.tile_width + x;
         let tex_y = tile_index / self.tile_x_count * self.tile_height + y;
-        let offset = (tex_y * self.tile_x_count * self.tile_width + tex_x) as usize * PIXEL_SIZE;
-        RGB(
+        let offset = (tex_y * self.tile_x_count * self.tile_width + tex_x) as usize * 4;
+
+        let alpha = self.data[offset + 3];
+        if alpha == 0 {
+            return None;
+        }
+
+        Some(RGB::new(
             self.data[offset],
             self.data[offset + 1],
             self.data[offset + 2],
-        )
+        ))
     }
 }

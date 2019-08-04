@@ -2,7 +2,6 @@ use quicksilver::prelude::*;
 use specs::prelude::*;
 
 use crate::assets::Assets;
-use crate::entities::create_player;
 use crate::resources::fps::FPS;
 use crate::resources::input::Input;
 use crate::resources::renderer::Renderer;
@@ -10,6 +9,7 @@ use crate::systems::fps_counter::FpsCounterSystem;
 use crate::systems::minimap::MinimapSystem;
 use crate::systems::player_fov::PlayerFovSystem;
 use crate::systems::player_movement::PlayerInputSystem;
+use crate::util::loader::load_map;
 
 pub struct MainState {
     assets: Assets,
@@ -35,7 +35,7 @@ impl State for MainState {
             .build();
         render.setup(&mut world);
 
-        create_player(&mut world);
+        load_map(&mut world);
 
         Ok(MainState {
             assets,

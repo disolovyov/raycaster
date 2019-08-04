@@ -1,2 +1,3 @@
 pub mod player;
-pub mod transform;
+pub mod pose;
+pub mod sprite;

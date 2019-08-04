@@ -1,16 +1,7 @@
 use quicksilver::graphics::{Image, PixelFormat};
 use quicksilver::Result;
 
-#[derive(Clone, Copy, Debug)]
-pub struct RGB(pub u8, pub u8, pub u8);
-
-impl RGB {
-    pub fn darken(&self) -> RGB {
-        RGB(self.0 / 2, self.1 / 2, self.2 / 2)
-    }
-}
-
-pub const PIXEL_SIZE: usize = 3;
+use crate::util::rgb::RGB;
 
 pub struct Framebuffer {
     width: u32,
@@ -23,18 +14,26 @@ impl Framebuffer {
         Framebuffer {
             width,
             height,
-            data: vec![0; width as usize * height as usize * PIXEL_SIZE],
+            data: vec![0; width as usize * height as usize * 3],
         }
+    }
+
+    pub fn width(&self) -> u32 {
+        self.width
+    }
+
+    pub fn height(&self) -> u32 {
+        self.height
     }
 
     pub fn draw_pixel(&mut self, x: u32, y: u32, color: RGB) {
         debug_assert!(x < self.width, "x = {} out of bounds", x);
         debug_assert!(y < self.height, "y = {} out of bounds", y);
 
-        let offset = (self.width * y + x) as usize * PIXEL_SIZE;
-        self.data[offset] = color.0;
-        self.data[offset + 1] = color.1;
-        self.data[offset + 2] = color.2;
+        let offset = (self.width * y + x) as usize * 3;
+        self.data[offset] = color.r;
+        self.data[offset + 1] = color.g;
+        self.data[offset + 2] = color.b;
     }
 
     pub fn draw_rect(&mut self, x: u32, y: u32, width: u32, height: u32, color: RGB) {

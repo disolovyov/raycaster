@@ -3,10 +3,10 @@ use quicksilver::prelude::*;
 use crate::components::pose::Pose;
 use crate::resources::room::Room;
 use crate::resources::tilesets::{TilesetType, Tilesets};
+use crate::util::ext::transform::TransformExt;
+use crate::util::ext::vector::VectorExt;
 use crate::util::framebuffer::Framebuffer;
 use crate::util::rgb::RGB;
-use crate::util::transform::TransformExt;
-use crate::util::vector::VectorExt;
 
 // See Lode's raycasting tutorial:
 // https://lodev.org/cgtutor/raycasting.html

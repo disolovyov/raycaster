@@ -1,8 +1,7 @@
 use quicksilver::prelude::*;
 use specs::prelude::*;
 
-use crate::resources::room::Room;
-use crate::util::transform::TransformExt;
+use crate::util::ext::transform::TransformExt;
 
 #[derive(Debug)]
 pub struct Pose {
@@ -22,28 +21,20 @@ impl Pose {
         }
     }
 
-    pub fn move_forward(&mut self, delta: f32, room: &Room) {
-        let delta = Transform::scale_ratio(delta) * self.direction;
-        self.move_to(delta, room);
+    pub fn move_forward(&self, delta: f32) -> Vector {
+        Transform::scale_ratio(delta) * self.direction
     }
 
-    pub fn move_back(&mut self, delta: f32, room: &Room) {
-        let delta = Transform::scale_ratio(delta) * -self.direction;
-        self.move_to(delta, room);
+    pub fn move_back(&self, delta: f32) -> Vector {
+        Transform::scale_ratio(delta) * -self.direction
     }
 
-    pub fn strafe_left(&mut self, delta: f32, room: &Room) {
-        let delta = Transform::scale_ratio(delta) * Transform::rotate(-90) * self.direction;
-        self.move_to(delta, room);
+    pub fn strafe_left(&self, delta: f32) -> Vector {
+        Transform::scale_ratio(delta) * Transform::rotate(-90) * self.direction
     }
 
-    pub fn strafe_right(&mut self, delta: f32, room: &Room) {
-        let delta = Transform::scale_ratio(delta) * Transform::rotate(90) * self.direction;
-        self.move_to(delta, room);
-    }
-
-    fn move_to(&mut self, delta: Vector, room: &Room) {
-        self.position = room.move_to(self.position, delta);
+    pub fn strafe_right(&self, delta: f32) -> Vector {
+        Transform::scale_ratio(delta) * Transform::rotate(90) * self.direction
     }
 
     pub fn turn_left(&mut self, delta: f32) {

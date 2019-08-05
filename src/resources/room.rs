@@ -1,7 +1,5 @@
 use quicksilver::prelude::*;
 
-use crate::config::PLAYER_RADIUS;
-
 pub struct Room {
     width: u32,
     height: u32,
@@ -44,31 +42,5 @@ impl Room {
         debug_assert!(y < self.height, "y = {} out of bounds", y);
 
         self.map[(self.width * y + x) as usize]
-    }
-
-    pub fn move_to(&self, from: Vector, delta: Vector) -> Vector {
-        let mut to = from + delta;
-
-        // Disallow out of bounds
-        let width = self.width as f32;
-        let height = self.height as f32;
-        if to.x < 0. || to.y < 0. || to.x >= width || to.y >= height {
-            return from;
-        }
-
-        // Anticipate collision with player radius
-        let to_buf = Transform::translate(to)
-            * Transform::rotate(delta.angle())
-            * Vector::new(PLAYER_RADIUS, 0);
-
-        // Rollback x or y on collision
-        if self.get_tile_xy(to_buf.x as u32, from.y as u32) != 0 {
-            to.x = from.x;
-        }
-        if self.get_tile_xy(from.x as u32, to_buf.y as u32) != 0 {
-            to.y = from.y;
-        }
-
-        to
     }
 }

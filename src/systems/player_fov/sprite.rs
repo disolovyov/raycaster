@@ -1,9 +1,13 @@
 use quicksilver::prelude::*;
 
 use crate::components::pose::Pose;
-use crate::components::sprite::Sprite;
+use crate::components::sprite::{Sprite, SpriteAlign};
 use crate::resources::tilesets::Tilesets;
 use crate::util::framebuffer::Framebuffer;
+
+// Max sprite width and height
+const SW: f32 = 64.;
+const SH: f32 = 64.;
 
 // See Lode's raycasting tutorial:
 // https://lodev.org/cgtutor/raycasting3.html
@@ -43,15 +47,21 @@ pub fn draw_sprites(
         let th = tileset.tile_height() as f32;
 
         let sprite_x = fw / 2. * (1. + tx / ty);
-        let sprite_w = tileset.tile_ratio() * (fh / ty).abs();
+        let max_sprite_h = (fh / ty).abs();
+        let sprite_h = max_sprite_h * (th / SH);
+        let start_dy = match sprite.align() {
+            SpriteAlign::TOP => (sprite_h - max_sprite_h) / 2.,
+            SpriteAlign::BOTTOM => (max_sprite_h - sprite_h) / 2.,
+        };
+
+        let start_y = fh / 2. - sprite_h / 2. + start_dy;
+        let from_y = start_y.max(0.) as i32;
+        let to_y = (start_y + sprite_h).min(fh - 1.) as i32;
+
+        let sprite_w = max_sprite_h * (tw / SW);
         let start_x = sprite_x - sprite_w / 2.;
         let from_x = start_x.max(0.) as i32;
         let to_x = (start_x + sprite_w).min(fw - 1.) as i32;
-
-        let sprite_h = (fh / ty).abs();
-        let start_y = fh / 2. - sprite_h / 2.;
-        let from_y = start_y.max(0.) as i32;
-        let to_y = (start_y + sprite_h).min(fh - 1.) as i32;
 
         let fw = framebuffer.width() as i32;
         for x in from_x..to_x {

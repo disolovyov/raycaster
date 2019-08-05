@@ -1,7 +1,7 @@
 use quicksilver::prelude::*;
 use specs::prelude::*;
 
-use crate::components::sprite::Sprite;
+use crate::components::sprite::{Sprite, SpriteAlign};
 use crate::entities::{create_player, create_prop};
 use crate::resources::room::Room;
 use crate::resources::tilesets::TilesetType;
@@ -33,12 +33,17 @@ pub fn load_map(world: &mut World) {
 
     create_prop(
         world,
-        Sprite::new(TilesetType::Sprites64, vec![13]),
+        Sprite::new(TilesetType::Sprites64, vec![13], SpriteAlign::BOTTOM),
         Vector::new(6.5, 1.5),
     );
     create_prop(
         world,
-        Sprite::new(TilesetType::Sprites64, vec![13]),
+        Sprite::new(TilesetType::Sprites48, vec![10], SpriteAlign::BOTTOM),
         Vector::new(6.5, 2.5),
+    );
+    create_prop(
+        world,
+        Sprite::new(TilesetType::Sprites48, vec![2], SpriteAlign::TOP),
+        Vector::new(6.5, 3.5),
     );
 }

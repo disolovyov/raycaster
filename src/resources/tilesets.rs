@@ -4,10 +4,12 @@ use crate::util::tileset::Tileset;
 
 const WALLS: &[u8] = include_bytes!("../../include/walls.png");
 const SPRITES64: &[u8] = include_bytes!("../../include/sprites64.png");
+const SPRITES48: &[u8] = include_bytes!("../../include/sprites48.png");
 
 pub struct Tilesets {
     walls: Tileset,
     sprites64: Tileset,
+    sprites48: Tileset,
 }
 
 impl Default for Tilesets {
@@ -15,6 +17,7 @@ impl Default for Tilesets {
         Tilesets {
             walls: Tileset::new(64, 64, WALLS),
             sprites64: Tileset::new(64, 64, SPRITES64),
+            sprites48: Tileset::new(48, 48, SPRITES48),
         }
     }
 }
@@ -23,6 +26,7 @@ impl Default for Tilesets {
 pub enum TilesetType {
     Walls,
     Sprites64,
+    Sprites48,
 }
 
 impl Index<TilesetType> for Tilesets {
@@ -32,6 +36,7 @@ impl Index<TilesetType> for Tilesets {
         match index {
             TilesetType::Walls => &self.walls,
             TilesetType::Sprites64 => &self.sprites64,
+            TilesetType::Sprites48 => &self.sprites48,
         }
     }
 }

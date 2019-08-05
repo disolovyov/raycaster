@@ -2,11 +2,18 @@ use specs::prelude::*;
 
 use crate::resources::tilesets::TilesetType;
 
+#[derive(Debug, Clone, Copy)]
+pub enum SpriteAlign {
+    TOP,
+    BOTTOM,
+}
+
 #[derive(Debug)]
 pub struct Sprite {
     tileset: TilesetType,
     frame: u8,
     frames: Vec<u8>,
+    align: SpriteAlign,
 }
 
 impl Component for Sprite {
@@ -14,11 +21,12 @@ impl Component for Sprite {
 }
 
 impl Sprite {
-    pub fn new(tileset: TilesetType, frames: Vec<u8>) -> Sprite {
+    pub fn new(tileset: TilesetType, frames: Vec<u8>, align: SpriteAlign) -> Sprite {
         Sprite {
             tileset,
             frame: 0,
             frames,
+            align,
         }
     }
 
@@ -28,5 +36,9 @@ impl Sprite {
 
     pub fn tileset_id(&self) -> u8 {
         self.frames[self.frame as usize]
+    }
+
+    pub fn align(&self) -> SpriteAlign {
+        self.align
     }
 }

@@ -28,10 +28,6 @@ impl Tileset {
         self.tile_height
     }
 
-    pub fn tile_ratio(&self) -> f32 {
-        self.tile_width as f32 / self.tile_height as f32
-    }
-
     pub fn get_pixel(&self, tile: u8, x: u32, y: u32) -> Option<RGB> {
         if tile == 0 || x >= self.tile_width || y >= self.tile_height {
             return None;

@@ -1,6 +1,8 @@
-# tinyraycaster
+# raycaster
 
-This is a demo of a software raycaster.
+This is a software raycaster based on [Lode's raycasting tutorials](https://lodev.org/cgtutor/index.html).
+
+It exists for me to play around with Rust [game dev libraries](https://arewegameyet.com/). :)
 
 ## Running
 

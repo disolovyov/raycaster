@@ -17,5 +17,5 @@ mod util;
 fn main() {
     let size = Vector::new(VW, VH);
     let settings = Settings::default();
-    run::<MainState>("tinyraycaster", size, settings);
+    run::<MainState>("raycaster", size, settings);
 }

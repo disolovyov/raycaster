@@ -1,7 +1,8 @@
 [package]
-name = "tinyraycaster"
+name = "raycaster"
 version = "0.1.0"
 edition = "2018"
+publish = false
 
 [dependencies]
 image = "*"

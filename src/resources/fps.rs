@@ -1,16 +1,29 @@
 use quicksilver::prelude::*;
 
-#[derive(Default)]
+use crate::util::ringbuffer::RingBuffer;
+
+const AVERAGE_WINDOW: usize = 200;
+
 pub struct FPS {
-    current: f64,
+    history: RingBuffer<f64>,
+}
+
+impl Default for FPS {
+    fn default() -> Self {
+        FPS {
+            history: RingBuffer::new(0., AVERAGE_WINDOW),
+        }
+    }
 }
 
 impl FPS {
     pub fn update(&mut self, window: &Window) {
-        self.current = window.current_fps();
+        let current = window.current_fps();
+        self.history.push(current);
     }
 
     pub fn current(&self) -> f64 {
-        self.current
+        let items = self.history.items();
+        items.iter().sum::<f64>() / items.len() as f64
     }
 }

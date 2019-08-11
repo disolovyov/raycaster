@@ -9,8 +9,10 @@ image = "*"
 
 [dependencies.quicksilver]
 version = "0.3.18"
-features = []
+default-features = false
+features = ["fonts"]
 
 [dependencies.specs]
 version = "0.15.0"
+default-features = false
 features = []

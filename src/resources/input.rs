@@ -22,13 +22,8 @@ pub struct Input {
 impl Input {
     pub fn update(&mut self, window: &Window) {
         let keyboard = window.keyboard();
-        let any_down = |bindings: &[Key]| {
-            bindings
-                .iter()
-                .map(|k| keyboard[*k])
-                .find(|bs| bs.is_down())
-                .is_some()
-        };
+        let any_down =
+            |bindings: &[Key]| bindings.iter().map(|k| keyboard[*k]).any(|bs| bs.is_down());
 
         self.keys.insert(MoveForward, any_down(&[Key::W, Key::Up]));
         self.keys.insert(MoveBack, any_down(&[Key::S, Key::Down]));

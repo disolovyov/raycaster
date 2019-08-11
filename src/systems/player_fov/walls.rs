@@ -35,10 +35,15 @@ struct FovRenderer<'a> {
     tilesets: &'a Tilesets,
 }
 
+enum WallSide {
+    X,
+    Y,
+}
+
 struct RaycastResult {
     map_pos: Vector,
     distance: f32,
-    y_side: bool,
+    hit_side: WallSide,
 }
 
 impl<'a> FovRenderer<'a> {
@@ -58,9 +63,9 @@ impl<'a> FovRenderer<'a> {
             self.zbuffer[ray as usize] = raycast_result.distance;
 
             // Calculate x coordinate on the wall texture
-            let wall_hit = match raycast_result.y_side {
-                false => (self.pose.position.y + raycast_result.distance * ray_dir.y).fract(),
-                true => (self.pose.position.x + raycast_result.distance * ray_dir.x).fract(),
+            let wall_hit = match raycast_result.hit_side {
+                WallSide::X => (self.pose.position.y + raycast_result.distance * ray_dir.y).fract(),
+                WallSide::Y => (self.pose.position.x + raycast_result.distance * ray_dir.x).fract(),
             };
             let mut tile_x = (wall_hit * walls.tile_width() as f32) as i32;
             if tile_x < 0 {
@@ -68,7 +73,7 @@ impl<'a> FovRenderer<'a> {
             }
 
             // Render texture column
-            let tile = self.room.get_tile(&raycast_result.map_pos);
+            let tile = self.room.get_tile(raycast_result.map_pos);
             let column_height = (fh as f32 / raycast_result.distance) as i32;
             let column_start = (fh - column_height) / 2;
 
@@ -85,10 +90,10 @@ impl<'a> FovRenderer<'a> {
                 let tile_y = walls.tile_height() as i32 * column_y / column_height;
                 let pixel = walls
                     .get_pixel(tile, tile_x as u32, tile_y as u32)
-                    .unwrap_or(RGB::new(0, 0, 0));
-                let color = match raycast_result.y_side {
-                    false => pixel,
-                    true => pixel.darken(),
+                    .unwrap_or_else(|| RGB::new(0, 0, 0));
+                let color = match raycast_result.hit_side {
+                    WallSide::X => pixel,
+                    WallSide::Y => pixel.darken(),
                 };
                 self.framebuffer.draw_pixel(ray, y as u32, color);
             }
@@ -104,7 +109,7 @@ impl<'a> FovRenderer<'a> {
         let mut map_pos = self.pose.position.trunc();
 
         // Which wall was hit?
-        let mut y_side: bool;
+        let mut hit_side: WallSide;
 
         // Length of ray from one x/y-side to next x/y-side
         let delta_dist_x = (1. / ray_dir.x).abs();
@@ -128,26 +133,26 @@ impl<'a> FovRenderer<'a> {
             if side_dist_x < side_dist_y {
                 side_dist_x += delta_dist_x;
                 map_pos.x += step.x;
-                y_side = false;
+                hit_side = WallSide::X;
             } else {
                 side_dist_y += delta_dist_y;
                 map_pos.y += step.y;
-                y_side = true;
+                hit_side = WallSide::Y;
             }
-            if self.room.get_tile(&map_pos) != 0 {
+            if self.room.get_tile(map_pos) != 0 {
                 break;
             }
         }
         // Calculate distance projected on camera direction
         // No fisheye correction needed
-        let wall_distance = match y_side {
-            false => (map_pos.x - self.pose.position.x + (1. - step.x) / 2.) / ray_dir.x,
-            true => (map_pos.y - self.pose.position.y + (1. - step.y) / 2.) / ray_dir.y,
+        let wall_distance = match hit_side {
+            WallSide::X => (map_pos.x - self.pose.position.x + (1. - step.x) / 2.) / ray_dir.x,
+            WallSide::Y => (map_pos.y - self.pose.position.y + (1. - step.y) / 2.) / ray_dir.y,
         };
 
         RaycastResult {
             distance: wall_distance,
-            y_side,
+            hit_side,
             map_pos,
         }
     }

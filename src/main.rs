@@ -1,3 +1,5 @@
+#![allow(clippy::match_bool, clippy::type_complexity)]
+
 use quicksilver::prelude::*;
 
 use crate::config::{VH, VW};

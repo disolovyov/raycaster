@@ -14,13 +14,13 @@ impl Assets {
     pub fn draw_text(
         &mut self,
         window: &mut Window,
-        position: &Vector,
+        position: Vector,
         text: &str,
         font_style: &FontStyle,
     ) -> Result<()> {
         self.font.execute(|font| {
             let image = font.render(text, font_style)?;
-            let rect = image.area().translate(position.clone());
+            let rect = image.area().translate(position);
             window.draw(&rect, Img(&image));
             Ok(())
         })

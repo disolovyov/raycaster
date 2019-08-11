@@ -29,7 +29,7 @@ impl RenderItem {
                 Ok(())
             }
             Renderable::Text(text, font_style) => {
-                assets.draw_text(window, &self.position, &text, &font_style)
+                assets.draw_text(window, self.position, &text, &font_style)
             }
         }
     }

@@ -10,7 +10,7 @@ impl RGB {
         RGB { r, g, b }
     }
 
-    pub fn darken(&self) -> RGB {
+    pub fn darken(self) -> RGB {
         RGB {
             r: self.r / 2,
             g: self.g / 2,

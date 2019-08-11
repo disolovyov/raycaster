@@ -36,7 +36,9 @@ impl<'a> System<'a> for MinimapSystem {
         for y in 0..room.height() {
             for x in 0..room.width() {
                 let tile = room.get_tile_xy(x, y);
-                let color = walls.get_pixel(tile, 1, 1).unwrap_or(RGB::new(0, 0, 0));
+                let color = walls
+                    .get_pixel(tile, 1, 1)
+                    .unwrap_or_else(|| RGB::new(0, 0, 0));
                 framebuffer.draw_rect(x * SCALE, y * SCALE, SCALE, SCALE, color);
             }
         }

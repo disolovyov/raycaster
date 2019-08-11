@@ -31,7 +31,7 @@ impl Room {
         self.height
     }
 
-    pub fn get_tile(&self, position: &Vector) -> u8 {
+    pub fn get_tile(&self, position: Vector) -> u8 {
         let x = position.x as u32;
         let y = position.y as u32;
         self.get_tile_xy(x, y)

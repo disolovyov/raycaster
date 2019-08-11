@@ -33,7 +33,7 @@ impl Tileset {
             return None;
         }
 
-        let tile_index = tile as u32 - 1;
+        let tile_index = u32::from(tile) - 1;
         let tex_x = tile_index % self.tile_x_count * self.tile_width + x;
         let tex_y = tile_index / self.tile_x_count * self.tile_height + y;
         let offset = (tex_y * self.tile_x_count * self.tile_width + tex_x) as usize * 4;

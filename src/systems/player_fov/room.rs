@@ -17,7 +17,7 @@ pub fn draw_room(
     room: &Room,
     tilesets: &Tilesets,
 ) {
-    let room_tileset = &tilesets[TilesetType::Room];
+    let room_tileset = &tilesets[TilesetType::Tiles];
     let tex_width = room_tileset.tile_width();
     let tex_height = room_tileset.tile_height();
 
@@ -44,7 +44,6 @@ pub fn draw_room(
         }
 
         // Render texture column
-        let tile = room.get_wall(raycast_result.map_pos);
         let column_height = (fh as f32 / raycast_result.distance) as i32;
         let column_start = (fh - column_height) / 2;
 
@@ -56,7 +55,7 @@ pub fn draw_room(
             let column_y = y - column_start;
             let tile_y = tex_height as i32 * column_y / column_height;
             let pixel = room_tileset
-                .get_pixel(tile, tile_x as u32, tile_y as u32)
+                .get_pixel(raycast_result.tile, tile_x as u32, tile_y as u32)
                 .unwrap_or_else(|| RGB::new(0, 0, 0));
             let color = match raycast_result.hit_side {
                 WallSide::X => pixel,
@@ -91,6 +90,7 @@ pub fn draw_room(
 
 struct RaycastResult {
     map_pos: Vector,
+    tile: u8,
     distance: f32,
     hit_side: WallSide,
 }
@@ -125,6 +125,9 @@ fn raycast(pose: &Pose, ray_dir: Vector, room: &Room) -> RaycastResult {
     // Direction to step in
     let step = ray_dir.signum();
 
+    // Which tile was hit?
+    let mut tile;
+
     // Perform DDA
     loop {
         if side_dist_x < side_dist_y {
@@ -136,10 +139,33 @@ fn raycast(pose: &Pose, ray_dir: Vector, room: &Room) -> RaycastResult {
             map_pos.y += step.y;
             hit_side = WallSide::Y;
         }
-        if room.get_wall(map_pos) != 0 {
+
+        tile = room.get_tile(map_pos);
+
+        if room.is_door(tile) {
+            // Step halfway into a door
+            match hit_side {
+                WallSide::X => {
+                    let half_dist_x = side_dist_x - delta_dist_x / 2.;
+                    if half_dist_x < side_dist_y {
+                        map_pos.x += step.x / 2.;
+                        break;
+                    }
+                }
+                WallSide::Y => {
+                    let half_dist_y = side_dist_y - delta_dist_y / 2.;
+                    if half_dist_y < side_dist_x {
+                        map_pos.y += step.y / 2.;
+                        break;
+                    }
+                }
+            }
+        } else if tile != 0 {
+            // Hit some other wall tile
             break;
         }
     }
+
     // Calculate distance projected on camera direction
     // No fisheye correction needed
     let wall_distance = match hit_side {
@@ -148,6 +174,7 @@ fn raycast(pose: &Pose, ray_dir: Vector, room: &Room) -> RaycastResult {
     };
 
     RaycastResult {
+        tile,
         distance: wall_distance,
         hit_side,
         map_pos,

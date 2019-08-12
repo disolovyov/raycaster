@@ -28,14 +28,14 @@ impl<'a> System<'a> for MinimapSystem {
     fn run(&mut self, data: Self::SystemData) {
         let (players, poses, sprites, mut renderer, room, tilesets) = data;
 
-        let walls = &tilesets[TilesetType::Room];
+        let walls = &tilesets[TilesetType::Tiles];
         let width = room.width() * SCALE;
         let height = room.height() * SCALE;
         let mut framebuffer = Framebuffer::new(width, height);
 
         for y in 0..room.height() {
             for x in 0..room.width() {
-                let tile = room.get_wall_xy(x, y);
+                let tile = room.get_tile_xy(x, y);
                 let color = walls
                     .get_pixel(tile, 1, 1)
                     .unwrap_or_else(|| RGB::new(0, 0, 0));

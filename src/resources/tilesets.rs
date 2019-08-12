@@ -2,12 +2,12 @@ use std::ops::Index;
 
 use crate::util::tileset::Tileset;
 
-const ROOM: &[u8] = include_bytes!("../../include/room.png");
+const TILES: &[u8] = include_bytes!("../../include/tiles.png");
 const SPRITES64: &[u8] = include_bytes!("../../include/sprites64.png");
 const SPRITES48: &[u8] = include_bytes!("../../include/sprites48.png");
 
 pub struct Tilesets {
-    room: Tileset,
+    tiles: Tileset,
     sprites64: Tileset,
     sprites48: Tileset,
 }
@@ -15,7 +15,7 @@ pub struct Tilesets {
 impl Default for Tilesets {
     fn default() -> Self {
         Tilesets {
-            room: Tileset::new(64, 64, ROOM),
+            tiles: Tileset::new(64, 64, TILES),
             sprites64: Tileset::new(64, 64, SPRITES64),
             sprites48: Tileset::new(48, 48, SPRITES48),
         }
@@ -24,7 +24,7 @@ impl Default for Tilesets {
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum TilesetType {
-    Room,
+    Tiles,
     Sprites64,
     Sprites48,
 }
@@ -34,7 +34,7 @@ impl Index<TilesetType> for Tilesets {
 
     fn index(&self, index: TilesetType) -> &Self::Output {
         match index {
-            TilesetType::Room => &self.room,
+            TilesetType::Tiles => &self.tiles,
             TilesetType::Sprites64 => &self.sprites64,
             TilesetType::Sprites48 => &self.sprites48,
         }

@@ -96,10 +96,10 @@ fn handle_movement(
         Transform::translate(to) * Transform::rotate(dt.angle()) * Vector::new(PLAYER_RADIUS, 0);
 
     // Rollback x or y on collision with walls
-    if room.get_tile_xy(to_buf.x as u32, from.y as u32) != 0 {
+    if room.get_wall_xy(to_buf.x as u32, from.y as u32) != 0 {
         to.x = from.x;
     }
-    if room.get_tile_xy(from.x as u32, to_buf.y as u32) != 0 {
+    if room.get_wall_xy(from.x as u32, to_buf.y as u32) != 0 {
         to.y = from.y;
     }
 

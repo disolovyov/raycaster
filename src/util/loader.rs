@@ -27,7 +27,9 @@ pub const DEBUG_MAP: [u8; 256] = [
 ];
 
 pub fn load_map(world: &mut World) {
-    world.write_resource::<Room>().set_map(16, 16, &DEBUG_MAP);
+    world
+        .write_resource::<Room>()
+        .set_map(16, 16, 22, 37, &DEBUG_MAP);
 
     create_player(world);
 

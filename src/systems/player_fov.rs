@@ -8,12 +8,12 @@ use crate::config::{VH, VW};
 use crate::resources::renderer::{Layer, RenderItem, Renderable, Renderer};
 use crate::resources::room::Room;
 use crate::resources::tilesets::Tilesets;
+use crate::systems::player_fov::room::draw_room;
 use crate::systems::player_fov::sprite::draw_sprites;
-use crate::systems::player_fov::walls::draw_walls;
 use crate::util::framebuffer::Framebuffer;
 
+mod room;
 mod sprite;
-mod walls;
 
 pub struct PlayerFovSystem;
 
@@ -34,7 +34,7 @@ impl<'a> System<'a> for PlayerFovSystem {
             let mut framebuffer = Framebuffer::new(VW, VH);
             let mut zbuffer: Vec<f32> = vec![0.; VW as usize];
 
-            draw_walls(
+            draw_room(
                 &mut framebuffer,
                 &mut zbuffer,
                 player_pose,

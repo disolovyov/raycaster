@@ -147,14 +147,18 @@ fn raycast(pose: &Pose, ray_dir: Vector, room: &Room) -> RaycastResult {
             match hit_side {
                 WallSide::X => {
                     let half_dist_x = side_dist_x - delta_dist_x / 2.;
-                    if half_dist_x < side_dist_y {
+                    let wall_hit = (pose.position.y + half_dist_x * ray_dir.y).fract();
+                    if half_dist_x < side_dist_y && wall_hit < 1. {
+                        // TBD: Animate
                         map_pos.x += step.x / 2.;
                         break;
                     }
                 }
                 WallSide::Y => {
                     let half_dist_y = side_dist_y - delta_dist_y / 2.;
-                    if half_dist_y < side_dist_x {
+                    let wall_hit = (pose.position.x + half_dist_y * ray_dir.x).fract();
+                    if half_dist_y < side_dist_x && wall_hit < 1. {
+                        // TBD: Animate
                         map_pos.y += step.y / 2.;
                         break;
                     }
@@ -168,14 +172,14 @@ fn raycast(pose: &Pose, ray_dir: Vector, room: &Room) -> RaycastResult {
 
     // Calculate distance projected on camera direction
     // No fisheye correction needed
-    let wall_distance = match hit_side {
+    let distance = match hit_side {
         WallSide::X => (map_pos.x - pose.position.x + (1. - step.x) / 2.) / ray_dir.x,
         WallSide::Y => (map_pos.y - pose.position.y + (1. - step.y) / 2.) / ray_dir.y,
     };
 
     RaycastResult {
         tile,
-        distance: wall_distance,
+        distance,
         hit_side,
         map_pos,
     }

@@ -2,7 +2,7 @@ use specs::prelude::*;
 
 use crate::components::player::Player;
 use crate::components::pose::Pose;
-use crate::config::{DOOR_SLIDE, PLAYER_RADIUS, WALK_SPEED};
+use crate::config::{PLAYER_RADIUS, WALK_SPEED};
 use crate::resources::input::{Binding, Input};
 use crate::resources::room::RoomObject::Door;
 use crate::resources::room::{CellAt, Room};
@@ -30,10 +30,8 @@ fn handle_actions(player_pose: &Pose, input: &Input, room: &mut Room) {
     if input.is_down(Binding::Action) {
         let next_step = player_pose.position + player_pose.move_forward(PLAYER_RADIUS + WALK_SPEED);
         let cell = room.cell_at_mut(next_step);
-        if let Door { closed, .. } = &mut cell.object {
-            if *closed >= 1. {
-                *closed -= DOOR_SLIDE;
-            }
+        if let Door { closing, .. } = &mut cell.object {
+            *closing = false;
         }
     }
 }

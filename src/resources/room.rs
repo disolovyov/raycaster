@@ -33,15 +33,18 @@ impl Room {
 
     pub fn mut_cells<F>(&mut self, f: F)
     where
-        F: Fn(&mut Cell) -> (),
+        F: Fn((u32, u32), &mut Cell) -> (),
     {
-        for mut cell in &mut self.cells {
-            f(&mut cell);
+        for y in 0..self.width {
+            for x in 0..self.height {
+                let pos = (x, y);
+                f(pos, self.cell_at_mut(pos))
+            }
         }
     }
 }
 
-pub trait CellAt<T> {
+pub trait CellAt<T: Copy> {
     fn cell_at(&self, position: T) -> &Cell;
     fn cell_at_mut(&mut self, position: T) -> &mut Cell;
 }
@@ -89,6 +92,13 @@ pub struct Cell {
 #[derive(Debug, Clone)]
 pub enum RoomObject {
     Empty,
-    Wall { tile: u8 },
-    Door { tile: u8, closed: f32 },
+    Wall {
+        tile: u8,
+    },
+    Door {
+        tile: u8,
+        closing: bool,
+        closed: f32,
+        open_timer: u8,
+    },
 }

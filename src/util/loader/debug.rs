@@ -55,6 +55,8 @@ const D1: Cell = Cell {
     blocking: true,
     object: Door {
         tile: 14,
+        closing: true,
         closed: 1.,
+        open_timer: 0,
     },
 };

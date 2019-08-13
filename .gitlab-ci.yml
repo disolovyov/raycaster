@@ -1,0 +1,27 @@
+image: "tomaka/cargo-web:latest"
+
+variables:
+  CARGO_HOME: $CI_PROJECT_DIR/.cargo
+
+cache:
+  paths:
+    - .cargo
+    - target
+
+test:
+  stage: test
+  script:
+    - rustc --version
+    - cargo --version
+    - cargo test --all --verbose
+
+pages:
+  stage: deploy
+  script:
+    - cargo web --version
+    - cargo web deploy --release -o public
+  artifacts:
+    paths:
+      - public
+  only:
+    - master

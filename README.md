@@ -2,8 +2,6 @@
 
 This is a software raycaster based on [Lode's raycasting tutorials](https://lodev.org/cgtutor/index.html).
 
-It exists for me to play around with Rust [game dev libraries](http://arewegameyet.com/). :)
-
 ## Running
 
 To build and run:

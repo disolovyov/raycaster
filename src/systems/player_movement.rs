@@ -3,38 +3,31 @@ use specs::prelude::*;
 
 use crate::components::player::Player;
 use crate::components::pose::Pose;
-use crate::components::solid::Solid;
 use crate::config::{PLAYER_RADIUS, STRAFE_SPEED, TURN_SPEED, WALK_SPEED};
 use crate::resources::input::{Binding, Input};
 use crate::resources::room::{CellAt, Room};
 
-pub struct PlayerInputSystem;
+pub struct PlayerMovementSystem;
 
-impl<'a> System<'a> for PlayerInputSystem {
+impl<'a> System<'a> for PlayerMovementSystem {
     type SystemData = (
         ReadStorage<'a, Player>,
-        ReadStorage<'a, Solid>,
         WriteStorage<'a, Pose>,
         Read<'a, Input>,
         Read<'a, Room>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (players, solids, mut poses, input, room) = data;
+        let (players, mut poses, input, room) = data;
 
         if let Some((_, player_pose)) = (&players, &mut poses).join().next() {
             handle_rotation(player_pose, &input);
         }
 
-        let solids: Vec<Vector> = (&solids, &poses)
-            .join()
-            .map(|(_, pose)| pose.position)
-            .collect();
-
         let move_to = (&players, &poses)
             .join()
             .next()
-            .and_then(|(_, player_pose)| handle_movement(player_pose, &input, &room, &solids));
+            .and_then(|(_, player_pose)| handle_movement(player_pose, &input, &room));
 
         if let Some(to) = move_to {
             if let Some((_, player_pose)) = (&players, &mut poses).join().next() {
@@ -52,12 +45,7 @@ fn handle_rotation(player_pose: &mut Pose, input: &Input) {
     }
 }
 
-fn handle_movement(
-    player_pose: &Pose,
-    input: &Input,
-    room: &Room,
-    _solids: &[Vector],
-) -> Option<Vector> {
+fn handle_movement(player_pose: &Pose, input: &Input, room: &Room) -> Option<Vector> {
     let dx = if input.is_down(Binding::MoveForward) {
         player_pose.move_forward(WALK_SPEED)
     } else if input.is_down(Binding::MoveBack) {

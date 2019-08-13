@@ -18,18 +18,15 @@ pub fn load_map(world: &mut World) {
         world,
         Sprite::new(Tiles64, vec![12], SpriteAlign::Bottom),
         Vector::new(6.5, 1.5),
-        true,
     );
     create_prop(
         world,
         Sprite::new(Tiles48, vec![9], SpriteAlign::Bottom),
         Vector::new(6.5, 2.5),
-        true,
     );
     create_prop(
         world,
         Sprite::new(Tiles48, vec![1], SpriteAlign::Top),
         Vector::new(6.5, 3.5),
-        false,
     );
 }

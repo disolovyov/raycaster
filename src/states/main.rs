@@ -7,8 +7,10 @@ use crate::resources::input::Input;
 use crate::resources::renderer::Renderer;
 use crate::systems::fps_counter::FpsCounterSystem;
 use crate::systems::minimap::MinimapSystem;
+use crate::systems::player_actions::PlayerActionsSystem;
 use crate::systems::player_fov::PlayerFovSystem;
-use crate::systems::player_movement::PlayerInputSystem;
+use crate::systems::player_movement::PlayerMovementSystem;
+use crate::systems::room_update::RoomUpdateSystem;
 use crate::util::loader::load_map;
 
 pub struct MainState {
@@ -24,7 +26,9 @@ impl State for MainState {
         let mut world = World::new();
 
         let mut logic = DispatcherBuilder::new()
-            .with(PlayerInputSystem, "player_input", &[])
+            .with(RoomUpdateSystem, "room_update", &[])
+            .with(PlayerMovementSystem, "player_input", &[])
+            .with(PlayerActionsSystem, "player_actions", &[])
             .build();
         logic.setup(&mut world);
 

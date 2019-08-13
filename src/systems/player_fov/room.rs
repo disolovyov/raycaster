@@ -35,14 +35,24 @@ pub fn draw_room(
         zbuffer[ray as usize] = raycast_result.distance;
 
         // Calculate x coordinate on the wall texture
-        let wall_hit = match raycast_result.hit_side {
+        let object_hit = match raycast_result.hit_side {
             HitSide::X => (pose.position.y + raycast_result.distance * ray_dir.y).fract(),
             HitSide::Y => (pose.position.x + raycast_result.distance * ray_dir.x).fract(),
         };
-        let mut tile_x = (wall_hit * tex_width as f32) as i32;
-        if tile_x < 0 {
-            tile_x += tex_width as i32;
-        }
+
+        // Calculate texture column
+        let shifted_hit = match raycast_result.cell.object {
+            Door { closed, .. } => {
+                let half = (1. - closed) / 2.;
+                if object_hit < 0.5 {
+                    object_hit + half
+                } else {
+                    object_hit - half
+                }
+            }
+            _ => object_hit,
+        };
+        let tile_x = (shifted_hit * tex_width as f32) as i32;
 
         // Render texture column
         let column_height = (fh as f32 / raycast_result.distance) as i32;
@@ -51,7 +61,7 @@ pub fn draw_room(
         let y_start = column_start.max(0);
         let y_end = ((fh + column_height) / 2).min(fh - 1);
 
-        // Draw wall column
+        // Draw cell object column
         for y in y_start..y_end {
             let column_y = y - column_start;
             let tile_y = tex_height as i32 * column_y / column_height;
@@ -71,7 +81,7 @@ pub fn draw_room(
             framebuffer.draw_pixel(ray, y as u32, final_color);
         }
 
-        let floor_texel = get_floor_texel(&raycast_result, ray_dir, wall_hit);
+        let floor_texel = get_floor_texel(&raycast_result, ray_dir, object_hit);
 
         // Draw floor and ceiling
         for y in y_end..fh {
@@ -95,9 +105,9 @@ pub fn draw_room(
     }
 }
 
-struct RaycastResult {
+struct RaycastResult<'a> {
     map_pos: Vector,
-    cell: Cell,
+    cell: &'a Cell,
     distance: f32,
     hit_side: HitSide,
 }
@@ -108,7 +118,7 @@ enum HitSide {
     Y,
 }
 
-fn raycast(pose: &Pose, ray_dir: Vector, room: &Room) -> RaycastResult {
+fn raycast<'a>(pose: &Pose, ray_dir: Vector, room: &'a Room) -> RaycastResult<'a> {
     // Which cell of the map we're in
     let mut map_pos = pose.position.trunc();
 
@@ -133,7 +143,7 @@ fn raycast(pose: &Pose, ray_dir: Vector, room: &Room) -> RaycastResult {
     let step = ray_dir.signum();
 
     // Which cell was hit?
-    let mut cell: Cell;
+    let mut cell: &Cell;
 
     // Perform DDA
     loop {
@@ -159,7 +169,7 @@ fn raycast(pose: &Pose, ray_dir: Vector, room: &Room) -> RaycastResult {
                     HitSide::X => {
                         let half_dist_x = side_dist_x - delta_dist_x / 2.;
                         let wall_hit = (pose.position.y + half_dist_x * ray_dir.y).fract();
-                        if half_dist_x < side_dist_y && wall_hit < closed {
+                        if half_dist_x < side_dist_y && door_hit(wall_hit, closed) {
                             map_pos.x += step.x / 2.;
                             break;
                         }
@@ -167,7 +177,7 @@ fn raycast(pose: &Pose, ray_dir: Vector, room: &Room) -> RaycastResult {
                     HitSide::Y => {
                         let half_dist_y = side_dist_y - delta_dist_y / 2.;
                         let wall_hit = (pose.position.x + half_dist_y * ray_dir.x).fract();
-                        if half_dist_y < side_dist_x && wall_hit < closed {
+                        if half_dist_y < side_dist_x && door_hit(wall_hit, closed) {
                             map_pos.y += step.y / 2.;
                             break;
                         }
@@ -191,6 +201,12 @@ fn raycast(pose: &Pose, ray_dir: Vector, room: &Room) -> RaycastResult {
         hit_side,
         map_pos,
     }
+}
+
+fn door_hit(wall_hit: f32, closed: f32) -> bool {
+    let left_side = closed / 2.;
+    let right_side = 1. - left_side;
+    (wall_hit <= left_side) || (wall_hit >= right_side)
 }
 
 fn get_floor_texel(raycast_result: &RaycastResult, ray_dir: Vector, wall_hit: f32) -> Vector {

@@ -12,6 +12,7 @@ pub enum Binding {
     StrafeRight,
     TurnLeft,
     TurnRight,
+    Action,
 }
 
 #[derive(Default)]
@@ -31,6 +32,7 @@ impl Input {
         self.keys.insert(StrafeRight, any_down(&[Key::D]));
         self.keys.insert(TurnLeft, any_down(&[Key::Q, Key::Left]));
         self.keys.insert(TurnRight, any_down(&[Key::E, Key::Right]));
+        self.keys.insert(Action, any_down(&[Key::Space]));
     }
 
     pub fn is_down(&self, binding: Binding) -> bool {

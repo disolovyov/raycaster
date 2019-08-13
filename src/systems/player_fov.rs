@@ -43,6 +43,7 @@ impl<'a> System<'a> for PlayerFovSystem {
             );
 
             let mut sprites: Vec<(&Sprite, &Pose)> = (&sprites, &poses).join().collect();
+
             draw_sprites(
                 &mut framebuffer,
                 &zbuffer,

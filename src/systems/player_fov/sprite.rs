@@ -50,8 +50,8 @@ pub fn draw_sprites(
         let max_sprite_h = (fh / ty).abs();
         let sprite_h = max_sprite_h * (th / SH);
         let start_dy = match sprite.align() {
-            SpriteAlign::TOP => (sprite_h - max_sprite_h) / 2.,
-            SpriteAlign::BOTTOM => (max_sprite_h - sprite_h) / 2.,
+            SpriteAlign::Top => (sprite_h - max_sprite_h) / 2.,
+            SpriteAlign::Bottom => (max_sprite_h - sprite_h) / 2.,
         };
 
         let start_y = fh / 2. - sprite_h / 2. + start_dy;

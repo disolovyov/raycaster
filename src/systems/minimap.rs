@@ -6,7 +6,8 @@ use crate::components::pose::Pose;
 use crate::components::sprite::Sprite;
 use crate::config::{VH, VW};
 use crate::resources::renderer::{Layer, RenderItem, Renderable, Renderer};
-use crate::resources::room::Room;
+use crate::resources::room::RoomObject::{Door, Wall};
+use crate::resources::room::{CellAt, Room};
 use crate::resources::tilesets::{TilesetType, Tilesets};
 use crate::util::framebuffer::Framebuffer;
 use crate::util::rgb::RGB;
@@ -28,16 +29,21 @@ impl<'a> System<'a> for MinimapSystem {
     fn run(&mut self, data: Self::SystemData) {
         let (players, poses, sprites, mut renderer, room, tilesets) = data;
 
-        let walls = &tilesets[TilesetType::Tiles];
+        let room_tileset = &tilesets[TilesetType::Tiles64];
         let width = room.width() * SCALE;
         let height = room.height() * SCALE;
         let mut framebuffer = Framebuffer::new(width, height);
 
         for y in 0..room.height() {
             for x in 0..room.width() {
-                let tile = room.get_tile_xy(x, y);
-                let color = walls
-                    .get_pixel(tile, 1, 1)
+                let cell = room.cell_at((x, y));
+                let tile = match cell.object {
+                    Wall { tile } => Some(tile),
+                    Door { tile, .. } => Some(tile),
+                    _ => None,
+                };
+                let color = tile
+                    .and_then(|t| room_tileset.get_pixel(t, 1, 1))
                     .unwrap_or_else(|| RGB::new(0, 0, 0));
                 framebuffer.draw_rect(x * SCALE, y * SCALE, SCALE, SCALE, color);
             }

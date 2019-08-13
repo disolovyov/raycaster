@@ -1,7 +1,8 @@
 use quicksilver::prelude::*;
 
 use crate::components::pose::Pose;
-use crate::resources::room::Room;
+use crate::resources::room::RoomObject::{Door, Wall};
+use crate::resources::room::{Cell, CellAt, Room};
 use crate::resources::tilesets::{TilesetType, Tilesets};
 use crate::util::ext::transform::TransformExt;
 use crate::util::ext::vector::VectorExt;
@@ -17,7 +18,7 @@ pub fn draw_room(
     room: &Room,
     tilesets: &Tilesets,
 ) {
-    let room_tileset = &tilesets[TilesetType::Tiles];
+    let room_tileset = &tilesets[TilesetType::Tiles64];
     let tex_width = room_tileset.tile_width();
     let tex_height = room_tileset.tile_height();
 
@@ -35,8 +36,8 @@ pub fn draw_room(
 
         // Calculate x coordinate on the wall texture
         let wall_hit = match raycast_result.hit_side {
-            WallSide::X => (pose.position.y + raycast_result.distance * ray_dir.y).fract(),
-            WallSide::Y => (pose.position.x + raycast_result.distance * ray_dir.x).fract(),
+            HitSide::X => (pose.position.y + raycast_result.distance * ray_dir.y).fract(),
+            HitSide::Y => (pose.position.x + raycast_result.distance * ray_dir.x).fract(),
         };
         let mut tile_x = (wall_hit * tex_width as f32) as i32;
         if tile_x < 0 {
@@ -54,14 +55,20 @@ pub fn draw_room(
         for y in y_start..y_end {
             let column_y = y - column_start;
             let tile_y = tex_height as i32 * column_y / column_height;
-            let pixel = room_tileset
-                .get_pixel(raycast_result.tile, tile_x as u32, tile_y as u32)
-                .unwrap_or_else(|| RGB::new(0, 0, 0));
-            let color = match raycast_result.hit_side {
-                WallSide::X => pixel,
-                WallSide::Y => pixel.darken(),
+
+            let tile = match raycast_result.cell.object {
+                Wall { tile } => Some(tile),
+                Door { tile, .. } => Some(tile),
+                _ => None,
             };
-            framebuffer.draw_pixel(ray, y as u32, color);
+            let color = tile
+                .and_then(|t| room_tileset.get_pixel(t, tile_x as u32, tile_y as u32))
+                .unwrap_or_else(|| RGB::new(0, 0, 0));
+            let final_color = match raycast_result.hit_side {
+                HitSide::X => color,
+                HitSide::Y => color.darken(),
+            };
+            framebuffer.draw_pixel(ray, y as u32, final_color);
         }
 
         let floor_texel = get_floor_texel(&raycast_result, ray_dir, wall_hit);
@@ -76,10 +83,10 @@ pub fn draw_room(
             let tex_y = (floor_y * tex_height as f32) as u32 % tex_height;
 
             let ceiling = room_tileset
-                .get_pixel(room.ceiling(), tex_x, tex_y)
+                .get_pixel(raycast_result.cell.ceiling, tex_x, tex_y)
                 .unwrap_or_else(|| RGB::new(0, 0, 0));
             let floor = room_tileset
-                .get_pixel(room.floor(), tex_x, tex_y)
+                .get_pixel(raycast_result.cell.floor, tex_x, tex_y)
                 .unwrap_or_else(|| RGB::new(0, 0, 0));
 
             framebuffer.draw_pixel(ray, (fh - y) as u32, ceiling);
@@ -90,13 +97,13 @@ pub fn draw_room(
 
 struct RaycastResult {
     map_pos: Vector,
-    tile: u8,
+    cell: Cell,
     distance: f32,
-    hit_side: WallSide,
+    hit_side: HitSide,
 }
 
-#[derive(PartialEq, Clone, Copy)]
-enum WallSide {
+#[derive(PartialEq, Copy, Clone)]
+enum HitSide {
     X,
     Y,
 }
@@ -105,8 +112,8 @@ fn raycast(pose: &Pose, ray_dir: Vector, room: &Room) -> RaycastResult {
     // Which cell of the map we're in
     let mut map_pos = pose.position.trunc();
 
-    // Which wall was hit?
-    let mut hit_side: WallSide;
+    // Which side was hit?
+    let mut hit_side: HitSide;
 
     // Length of ray from one x/y-side to next x/y-side
     let delta_dist_x = (1. / ray_dir.x).abs();
@@ -125,60 +132,61 @@ fn raycast(pose: &Pose, ray_dir: Vector, room: &Room) -> RaycastResult {
     // Direction to step in
     let step = ray_dir.signum();
 
-    // Which tile was hit?
-    let mut tile;
+    // Which cell was hit?
+    let mut cell: Cell;
 
     // Perform DDA
     loop {
         if side_dist_x < side_dist_y {
             side_dist_x += delta_dist_x;
             map_pos.x += step.x;
-            hit_side = WallSide::X;
+            hit_side = HitSide::X;
         } else {
             side_dist_y += delta_dist_y;
             map_pos.y += step.y;
-            hit_side = WallSide::Y;
+            hit_side = HitSide::Y;
         }
 
-        tile = room.get_tile(map_pos);
+        cell = room.cell_at(map_pos);
 
-        if room.is_door(tile) {
-            // Step halfway into a door
-            match hit_side {
-                WallSide::X => {
-                    let half_dist_x = side_dist_x - delta_dist_x / 2.;
-                    let wall_hit = (pose.position.y + half_dist_x * ray_dir.y).fract();
-                    if half_dist_x < side_dist_y && wall_hit < 1. {
-                        // TBD: Animate
-                        map_pos.x += step.x / 2.;
-                        break;
+        match cell.object {
+            Wall { .. } => {
+                break;
+            }
+            Door { closed, .. } => {
+                // Step halfway into a door
+                match hit_side {
+                    HitSide::X => {
+                        let half_dist_x = side_dist_x - delta_dist_x / 2.;
+                        let wall_hit = (pose.position.y + half_dist_x * ray_dir.y).fract();
+                        if half_dist_x < side_dist_y && wall_hit < closed {
+                            map_pos.x += step.x / 2.;
+                            break;
+                        }
                     }
-                }
-                WallSide::Y => {
-                    let half_dist_y = side_dist_y - delta_dist_y / 2.;
-                    let wall_hit = (pose.position.x + half_dist_y * ray_dir.x).fract();
-                    if half_dist_y < side_dist_x && wall_hit < 1. {
-                        // TBD: Animate
-                        map_pos.y += step.y / 2.;
-                        break;
+                    HitSide::Y => {
+                        let half_dist_y = side_dist_y - delta_dist_y / 2.;
+                        let wall_hit = (pose.position.x + half_dist_y * ray_dir.x).fract();
+                        if half_dist_y < side_dist_x && wall_hit < closed {
+                            map_pos.y += step.y / 2.;
+                            break;
+                        }
                     }
                 }
             }
-        } else if tile != 0 {
-            // Hit some other wall tile
-            break;
+            _ => {}
         }
     }
 
     // Calculate distance projected on camera direction
     // No fisheye correction needed
     let distance = match hit_side {
-        WallSide::X => (map_pos.x - pose.position.x + (1. - step.x) / 2.) / ray_dir.x,
-        WallSide::Y => (map_pos.y - pose.position.y + (1. - step.y) / 2.) / ray_dir.y,
+        HitSide::X => (map_pos.x - pose.position.x + (1. - step.x) / 2.) / ray_dir.x,
+        HitSide::Y => (map_pos.y - pose.position.y + (1. - step.y) / 2.) / ray_dir.y,
     };
 
     RaycastResult {
-        tile,
+        cell,
         distance,
         hit_side,
         map_pos,
@@ -189,11 +197,11 @@ fn get_floor_texel(raycast_result: &RaycastResult, ray_dir: Vector, wall_hit: f3
     let hit_side = raycast_result.hit_side;
     let map_pos = raycast_result.map_pos;
 
-    if hit_side == WallSide::X && ray_dir.x < 0. {
+    if hit_side == HitSide::X && ray_dir.x < 0. {
         Vector::new(map_pos.x + 1., map_pos.y + wall_hit)
-    } else if hit_side == WallSide::X {
+    } else if hit_side == HitSide::X {
         Vector::new(map_pos.x, map_pos.y + wall_hit)
-    } else if hit_side == WallSide::Y && ray_dir.y < 0. {
+    } else if hit_side == HitSide::Y && ray_dir.y < 0. {
         Vector::new(map_pos.x + wall_hit, map_pos.y + 1.)
     } else {
         Vector::new(map_pos.x + wall_hit, map_pos.y)

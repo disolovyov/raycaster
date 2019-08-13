@@ -2,10 +2,10 @@ use specs::prelude::*;
 
 use crate::resources::tilesets::TilesetType;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Copy, Clone)]
 pub enum SpriteAlign {
-    TOP,
-    BOTTOM,
+    Top,
+    Bottom,
 }
 
 #[derive(Debug)]

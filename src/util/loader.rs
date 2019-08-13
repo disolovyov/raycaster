@@ -4,52 +4,31 @@ use specs::prelude::*;
 use crate::components::sprite::{Sprite, SpriteAlign};
 use crate::entities::{create_player, create_prop};
 use crate::resources::room::Room;
-use crate::resources::tilesets::TilesetType;
+use crate::resources::tilesets::TilesetType::{Tiles48, Tiles64};
+use crate::util::loader::debug::DEBUG_MAP;
 
-#[rustfmt::skip]
-pub const DEBUG_MAP: [u8; 256] = [
-    4, 4, 4, 4, 4,  4, 4, 4, 4, 4,  4, 4, 4, 4, 4, 4,
-    4, 0, 0, 0, 0,  0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 4,
-    4, 0, 0, 0, 0,  0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 4,
-    4, 0, 0, 0, 0,  0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 4,
-    4, 0, 0, 0, 0,  0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 4,
-    4, 0, 0, 0, 0, 21, 4, 4, 3, 4, 21, 0, 0, 0, 0, 4,
-    4, 0, 0, 0, 0,  4, 0, 0, 0, 0,  4, 0, 0, 0, 0, 4,
-    4, 0, 0, 0, 0,  4, 0, 0, 0, 0,  3, 0, 0, 0, 0, 4,
-    4, 0, 0, 0, 0,  3, 0, 0, 0, 0,  4, 0, 0, 0, 0, 4,
-    4, 0, 0, 0, 0,  4, 0, 0, 0, 0,  4, 0, 0, 0, 0, 4,
-    4, 0, 0, 0, 0, 21, 4, 3, 4, 4, 21, 0, 0, 0, 0, 4,
-    4, 0, 0, 0, 0,  0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 4,
-    4, 0, 0, 0, 0,  0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 4,
-    4, 0, 0, 0, 0,  0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 4,
-    4, 0, 0, 0, 0,  0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 4,
-    4, 4, 4, 4, 4,  4, 4, 4, 4, 4,  4, 4, 4, 4, 4, 4,
-];
-
-pub const DEBUG_DOORS: [u8; 1] = [3];
+mod debug;
 
 pub fn load_map(world: &mut World) {
-    world
-        .write_resource::<Room>()
-        .set_map(16, 16, 22, 37, &DEBUG_MAP, &DEBUG_DOORS);
+    world.write_resource::<Room>().set_map(16, 16, &DEBUG_MAP);
 
     create_player(world);
 
     create_prop(
         world,
-        Sprite::new(TilesetType::Sprites64, vec![13], SpriteAlign::BOTTOM),
+        Sprite::new(Tiles64, vec![12], SpriteAlign::Bottom),
         Vector::new(6.5, 1.5),
         true,
     );
     create_prop(
         world,
-        Sprite::new(TilesetType::Sprites48, vec![10], SpriteAlign::BOTTOM),
+        Sprite::new(Tiles48, vec![9], SpriteAlign::Bottom),
         Vector::new(6.5, 2.5),
         true,
     );
     create_prop(
         world,
-        Sprite::new(TilesetType::Sprites48, vec![2], SpriteAlign::TOP),
+        Sprite::new(Tiles48, vec![1], SpriteAlign::Top),
         Vector::new(6.5, 3.5),
         false,
     );

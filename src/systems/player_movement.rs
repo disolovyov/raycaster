@@ -6,7 +6,7 @@ use crate::components::pose::Pose;
 use crate::components::solid::Solid;
 use crate::config::{PLAYER_RADIUS, STRAFE_SPEED, TURN_SPEED, WALK_SPEED};
 use crate::resources::input::{Binding, Input};
-use crate::resources::room::Room;
+use crate::resources::room::{CellAt, Room};
 
 pub struct PlayerInputSystem;
 
@@ -96,10 +96,10 @@ fn handle_movement(
         Transform::translate(to) * Transform::rotate(dt.angle()) * Vector::new(PLAYER_RADIUS, 0);
 
     // Rollback x or y on collision with walls
-    if room.get_tile_xy(to_buf.x as u32, from.y as u32) != 0 {
+    if room.cell_at((to_buf.x as u32, from.y as u32)).blocking {
         to.x = from.x;
     }
-    if room.get_tile_xy(from.x as u32, to_buf.y as u32) != 0 {
+    if room.cell_at((from.x as u32, to_buf.y as u32)).blocking {
         to.y = from.y;
     }
 

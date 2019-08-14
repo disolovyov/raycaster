@@ -4,8 +4,8 @@ use crate::resources::room::RoomObject::{Door, Empty, Wall};
 #[rustfmt::skip]
 pub const DEBUG_MAP: [Cell; 256] = [
     W1, W1, W1, W1, W1, W1, W1, W1, W1, W1, W1, W1, W1, W1, W1, W1,
-    W1, E0, E0, E0, E0, E0, E1, E0, E0, E0, E0, E0, E0, E0, E0, W1,
-    W1, E0, E0, E0, E0, E0, E1, E0, E0, E0, E0, E0, E0, E0, E0, W1,
+    W1, E0, E0, E0, E0, E0, E0, E0, E0, E0, E0, E0, E0, E0, E0, W1,
+    W1, E0, E1, E0, E0, E0, E0, E0, E0, E0, E0, E0, E0, E1, E0, W1,
     W1, E0, E0, E0, E0, E0, E0, E0, E0, E0, E0, E0, E0, E0, E0, W1,
     W1, E0, E0, E0, E0, E0, E0, E0, E0, E0, E0, E0, E0, E0, E0, W1,
     W1, E0, E0, E0, E0, W2, W1, W1, D1, W1, W2, E0, E0, E0, E0, W1,
@@ -16,7 +16,7 @@ pub const DEBUG_MAP: [Cell; 256] = [
     W1, E0, E0, E0, E0, W2, W1, D1, W1, W1, W2, E0, E0, E0, E0, W1,
     W1, E0, E0, E0, E0, E0, E0, E0, E0, E0, E0, E0, E0, E0, E0, W1,
     W1, E0, E0, E0, E0, E0, E0, E0, E0, E0, E0, E0, E0, E0, E0, W1,
-    W1, E0, E0, E0, E0, E0, E0, E0, E0, E0, E0, E0, E0, E0, E0, W1,
+    W1, E0, E1, E0, E0, E0, E0, E0, E0, E0, E0, E0, E0, E1, E0, W1,
     W1, E0, E0, E0, E0, E0, E0, E0, E0, E0, E0, E0, E0, E0, E0, W1,
     W1, W1, W1, W1, W1, W1, W1, W1, W1, W1, W1, W1, W1, W1, W1, W1,
 ];

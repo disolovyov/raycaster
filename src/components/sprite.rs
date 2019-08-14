@@ -1,5 +1,6 @@
 use specs::prelude::*;
 
+use crate::resources::animation::Animation;
 use crate::resources::tilesets::TilesetType;
 
 #[derive(Debug, Copy, Clone)]
@@ -40,5 +41,9 @@ impl Sprite {
 
     pub fn align(&self) -> SpriteAlign {
         self.align
+    }
+
+    pub fn animate(&mut self, animation: &Animation) {
+        self.frame = animation.frame(15, self.frames.len() as u8);
     }
 }

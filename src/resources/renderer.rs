@@ -3,6 +3,7 @@ use quicksilver::prelude::*;
 use crate::assets::Assets;
 use crate::util::framebuffer::Framebuffer;
 
+#[derive(Default)]
 pub struct Renderer {
     items: Vec<RenderItem>,
 }
@@ -38,12 +39,6 @@ impl RenderItem {
 pub enum Renderable {
     Framebuffer(Framebuffer),
     Text(String, FontStyle),
-}
-
-impl Default for Renderer {
-    fn default() -> Self {
-        Renderer { items: vec![] }
-    }
 }
 
 impl Renderer {

@@ -14,19 +14,25 @@ pub fn load_map(world: &mut World) {
 
     create_player(world);
 
+    for (x, y) in [(2.5, 2.5), (2.5, 13.5), (13.5, 2.5), (13.5, 13.5)].iter() {
+        create_prop(
+            world,
+            Sprite::new(Tiles48, vec![9], SpriteAlign::Bottom),
+            Vector::new(*x, *y),
+        );
+    }
+
+    for (x, y) in [(8., 4.5), (8.5, 4.5), (9., 4.5)].iter() {
+        create_prop(
+            world,
+            Sprite::new(Tiles48, vec![1], SpriteAlign::Top),
+            Vector::new(*x, *y),
+        );
+    }
+
     create_prop(
         world,
-        Sprite::new(Tiles64, vec![12], SpriteAlign::Bottom),
-        Vector::new(6.5, 1.5),
-    );
-    create_prop(
-        world,
-        Sprite::new(Tiles48, vec![9], SpriteAlign::Bottom),
-        Vector::new(6.5, 2.5),
-    );
-    create_prop(
-        world,
-        Sprite::new(Tiles48, vec![1], SpriteAlign::Top),
-        Vector::new(6.5, 3.5),
+        Sprite::new(Tiles64, vec![37, 39, 38, 39], SpriteAlign::Bottom),
+        Vector::new(8.5, 2.5),
     );
 }

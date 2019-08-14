@@ -2,6 +2,7 @@ use quicksilver::prelude::*;
 use specs::prelude::*;
 
 use crate::assets::Assets;
+use crate::resources::animation::Animation;
 use crate::resources::fps::FPS;
 use crate::resources::input::Input;
 use crate::resources::renderer::Renderer;
@@ -11,6 +12,7 @@ use crate::systems::player_actions::PlayerActionsSystem;
 use crate::systems::player_fov::PlayerFovSystem;
 use crate::systems::player_movement::PlayerMovementSystem;
 use crate::systems::room_update::RoomUpdateSystem;
+use crate::systems::sprite_animation::SpriteAnimationSystem;
 use crate::util::loader::load_map;
 
 pub struct MainState {
@@ -29,6 +31,7 @@ impl State for MainState {
             .with(RoomUpdateSystem, "room_update", &[])
             .with(PlayerMovementSystem, "player_input", &[])
             .with(PlayerActionsSystem, "player_actions", &[])
+            .with(SpriteAnimationSystem, "sprite_animation", &[])
             .build();
         logic.setup(&mut world);
 
@@ -52,6 +55,7 @@ impl State for MainState {
     fn update(&mut self, window: &mut Window) -> Result<()> {
         self.world.write_resource::<Input>().update(window);
         self.world.write_resource::<FPS>().update(window);
+        self.world.write_resource::<Animation>().advance();
         self.logic.dispatch(&self.world);
         self.world.maintain();
         Ok(())

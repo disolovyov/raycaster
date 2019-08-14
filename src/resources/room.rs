@@ -1,19 +1,10 @@
 use quicksilver::prelude::*;
 
+#[derive(Default)]
 pub struct Room {
     width: u32,
     height: u32,
     cells: Vec<Cell>,
-}
-
-impl Default for Room {
-    fn default() -> Self {
-        Room {
-            width: 0,
-            height: 0,
-            cells: vec![],
-        }
-    }
 }
 
 impl Room {

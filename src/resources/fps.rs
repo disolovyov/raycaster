@@ -2,7 +2,7 @@ use quicksilver::prelude::*;
 
 use crate::util::ringbuffer::RingBuffer;
 
-const AVERAGE_WINDOW: usize = 200;
+const AVERAGE_WINDOW: usize = 60;
 
 pub struct FPS {
     history: RingBuffer<f64>,

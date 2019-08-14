@@ -27,7 +27,7 @@ pub fn create_prop(world: &mut World, sprite: Sprite, position: Vector) -> Entit
 pub fn create_mob(world: &mut World, sprite: Sprite, position: Vector) -> Entity {
     world
         .create_entity()
-        .with(Mob::default())
+        .with(Mob::new(position))
         .with(sprite)
         .with(Pose::new(position))
         .build()

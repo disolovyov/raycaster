@@ -1,4 +1,4 @@
-use specs::{Component, NullStorage};
+use specs::prelude::*;
 
 pub struct Mob {
     pub movement: MobMovement,
@@ -17,5 +17,5 @@ impl Default for Mob {
 }
 
 impl Component for Mob {
-    type Storage = NullStorage<Self>;
+    type Storage = VecStorage<Self>;
 }

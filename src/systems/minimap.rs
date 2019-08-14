@@ -1,9 +1,10 @@
 use quicksilver::prelude::*;
 use specs::prelude::*;
 
+use crate::components::mob::Mob;
 use crate::components::player::Player;
 use crate::components::pose::Pose;
-use crate::components::sprite::Sprite;
+use crate::components::prop::Prop;
 use crate::config::{VH, VW};
 use crate::resources::renderer::{Layer, RenderItem, Renderable, Renderer};
 use crate::resources::room::RoomObject::{Door, Wall};
@@ -19,15 +20,16 @@ const SCALE: u32 = 6;
 impl<'a> System<'a> for MinimapSystem {
     type SystemData = (
         ReadStorage<'a, Player>,
+        ReadStorage<'a, Mob>,
+        ReadStorage<'a, Prop>,
         ReadStorage<'a, Pose>,
-        ReadStorage<'a, Sprite>,
         Write<'a, Renderer>,
         Read<'a, Room>,
         Read<'a, Tilesets>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (players, poses, sprites, mut renderer, room, tilesets) = data;
+        let (players, mobs, props, poses, mut renderer, room, tilesets) = data;
 
         let room_tileset = &tilesets[TilesetType::Tiles64];
         let width = room.width() * SCALE;
@@ -51,12 +53,22 @@ impl<'a> System<'a> for MinimapSystem {
 
         if let Some((_, pose)) = (&players, &poses).join().next() {
             let player_color = RGB::new(255, 255, 255);
-            draw_dot(&mut framebuffer, pose, player_color)
+            draw_position(&mut framebuffer, pose, player_color);
+            draw_rotation(&mut framebuffer, pose, player_color);
         }
 
-        let sprite_color = RGB::new(255, 0, 0);
-        for (_, pose) in (&sprites, &poses).join() {
-            draw_dot(&mut framebuffer, pose, sprite_color);
+        let mob_color = RGB::new(255, 0, 0);
+        for (_, pose) in (&mobs, &poses).join() {
+            draw_position(&mut framebuffer, pose, mob_color);
+            draw_rotation(&mut framebuffer, pose, mob_color);
+        }
+
+        let prop_color = RGB::new(192, 192, 192);
+        let blocking_props = (&props, &poses)
+            .join()
+            .filter_map(|(_, pose)| Some(pose).filter(|_| room.cell_at(pose.position).blocking));
+        for pose in blocking_props {
+            draw_position(&mut framebuffer, pose, prop_color);
         }
 
         renderer.add(RenderItem {
@@ -67,13 +79,16 @@ impl<'a> System<'a> for MinimapSystem {
     }
 }
 
-fn draw_dot(framebuffer: &mut Framebuffer, pose: &Pose, color: RGB) {
+fn draw_position(framebuffer: &mut Framebuffer, pose: &Pose, color: RGB) {
     let scale = SCALE as f32;
     let x = pose.position.x * scale;
     let y = pose.position.y * scale;
-    let dir_x = x + pose.direction.x * scale;
-    let dir_y = y + pose.direction.y * scale;
-
     framebuffer.draw_rect(x as u32 - 1, y as u32 - 1, 3, 3, color);
+}
+
+fn draw_rotation(framebuffer: &mut Framebuffer, pose: &Pose, color: RGB) {
+    let scale = SCALE as f32;
+    let dir_x = (pose.position.x + pose.direction.x) * scale;
+    let dir_y = (pose.position.y + pose.direction.y) * scale;
     framebuffer.draw_pixel(dir_x as u32, dir_y as u32, color);
 }

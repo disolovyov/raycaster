@@ -1,3 +1,4 @@
+pub mod ai;
 pub mod fps_counter;
 pub mod minimap;
 pub mod player_actions;

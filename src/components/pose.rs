@@ -3,7 +3,7 @@ use specs::prelude::*;
 
 use crate::util::ext::transform::TransformExt;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Pose {
     pub position: Vector,
     pub direction: Vector,

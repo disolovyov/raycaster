@@ -68,7 +68,12 @@ impl<'a> System<'a> for MinimapSystem {
 }
 
 fn draw_dot(framebuffer: &mut Framebuffer, pose: &Pose, color: RGB) {
-    let x = (pose.position.x * SCALE as f32) as u32;
-    let y = (pose.position.y * SCALE as f32) as u32;
-    framebuffer.draw_rect(x - 1, y - 1, 3, 3, color);
+    let scale = SCALE as f32;
+    let x = pose.position.x * scale;
+    let y = pose.position.y * scale;
+    let dir_x = x + pose.direction.x * scale;
+    let dir_y = y + pose.direction.y * scale;
+
+    framebuffer.draw_rect(x as u32 - 1, y as u32 - 1, 3, 3, color);
+    framebuffer.draw_pixel(dir_x as u32, dir_y as u32, color);
 }

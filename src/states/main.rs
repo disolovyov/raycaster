@@ -6,6 +6,7 @@ use crate::resources::animation::Animation;
 use crate::resources::fps::FPS;
 use crate::resources::input::Input;
 use crate::resources::renderer::Renderer;
+use crate::systems::ai::AiSystem;
 use crate::systems::fps_counter::FpsCounterSystem;
 use crate::systems::minimap::MinimapSystem;
 use crate::systems::player_actions::PlayerActionsSystem;
@@ -31,6 +32,7 @@ impl State for MainState {
             .with(RoomUpdateSystem, "room_update", &[])
             .with(PlayerMovementSystem, "player_input", &[])
             .with(PlayerActionsSystem, "player_actions", &[])
+            .with(AiSystem, "ai", &[])
             .with(SpriteAnimationSystem, "sprite_animation", &[])
             .build();
         logic.setup(&mut world);

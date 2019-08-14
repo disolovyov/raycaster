@@ -2,7 +2,7 @@ use quicksilver::prelude::*;
 use specs::prelude::*;
 
 use crate::components::sprite::{Sprite, SpriteAlign};
-use crate::entities::{create_player, create_prop};
+use crate::entities::{create_mob, create_player, create_prop};
 use crate::resources::room::Room;
 use crate::resources::tilesets::TilesetType::{Tiles48, Tiles64};
 use crate::util::loader::debug::DEBUG_MAP;
@@ -12,7 +12,7 @@ mod debug;
 pub fn load_map(world: &mut World) {
     world.write_resource::<Room>().set_map(16, 16, &DEBUG_MAP);
 
-    create_player(world);
+    create_player(world, Vector::new(1.5, 1.5));
 
     for (x, y) in [(2.5, 2.5), (2.5, 13.5), (13.5, 2.5), (13.5, 13.5)].iter() {
         create_prop(
@@ -30,7 +30,7 @@ pub fn load_map(world: &mut World) {
         );
     }
 
-    create_prop(
+    create_mob(
         world,
         Sprite::new(Tiles64, vec![37, 39, 38, 39], SpriteAlign::Bottom),
         Vector::new(8.5, 2.5),

@@ -21,6 +21,10 @@ impl Pose {
         }
     }
 
+    pub fn move_in_direction(&self, direction: Vector, delta: f32) -> Vector {
+        Transform::scale_ratio(delta) * direction
+    }
+
     pub fn move_forward(&self, delta: f32) -> Vector {
         Transform::scale_ratio(delta) * self.direction
     }

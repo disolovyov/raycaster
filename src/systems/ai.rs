@@ -4,9 +4,11 @@ use crate::components::mob::Mob;
 use crate::components::mob::MobMovement::FollowPlayer;
 use crate::components::player::Player;
 use crate::components::pose::Pose;
-use crate::config::WALK_SPEED;
 use crate::resources::room::{CellAt, Room};
+use crate::systems::ai::pathfinding::shortest_path;
 use crate::util::ext::vector::VectorExt;
+
+mod pathfinding;
 
 pub struct AiSystem;
 
@@ -39,7 +41,7 @@ fn move_mob(mob: &mut Mob, mob_pose: &mut Pose, player_pose: &Pose, room: &Room)
         mob.target = player_pose.position;
     }
     match mob.movement {
-        FollowPlayer => follow_player(mob, mob_pose),
+        FollowPlayer => follow_player(mob, mob_pose, room),
     }
 }
 
@@ -51,11 +53,15 @@ fn can_see(mob_pose: &Pose, player_pose: &Pose, room: &Room) -> bool {
         .any(|pos| room.cell_at(pos).blocking)
 }
 
-fn follow_player(mob: &Mob, mob_pose: &mut Pose) {
+fn follow_player(mob: &Mob, mob_pose: &mut Pose, room: &Room) {
     mob_pose.direction = mob_pose.position.direction_to(mob.target);
 
     let distance = mob_pose.position.distance(mob.target);
-    if distance > 2. {
-        mob_pose.position += mob_pose.move_forward(WALK_SPEED / 4.);
+    let min_distance = 2.;
+    if distance > min_distance {
+        if let Some(target) = shortest_path(mob_pose.position, mob.target, min_distance, room) {
+            let direction = mob_pose.position.direction_to(target);
+            mob_pose.position += mob_pose.move_in_direction(direction, mob.speed);
+        }
     }
 }

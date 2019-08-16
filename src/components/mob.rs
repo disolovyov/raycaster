@@ -1,9 +1,12 @@
 use quicksilver::prelude::*;
 use specs::prelude::*;
 
+use crate::config::WALK_SPEED;
+
 pub struct Mob {
     pub movement: MobMovement,
     pub target: Vector,
+    pub speed: f32,
 }
 
 pub enum MobMovement {
@@ -19,6 +22,7 @@ impl Mob {
         Mob {
             movement: MobMovement::FollowPlayer,
             target,
+            speed: WALK_SPEED / 4.,
         }
     }
 }

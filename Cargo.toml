@@ -6,6 +6,7 @@ publish = false
 
 [dependencies]
 image = "*"
+pathfinding = "1.1.12"
 
 [dependencies.quicksilver]
 version = "0.3.18"

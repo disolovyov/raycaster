@@ -42,7 +42,7 @@ pub fn shortest_path(from: Vector, to: Vector, buffer: f32, room: &Room) -> Opti
 
 fn path_successors(position: Point, room: &Room) -> Vec<(Point, u32)> {
     [0, 45, 90, 135, 180, 225, 270, 315]
-        .into_iter()
+        .iter()
         .map(|angle| Transform::rotate(*angle) * Vector::X + position.into_vector())
         .filter(|v| sprite_fits(*v, room))
         .map(|v| (v.into(), 1))
@@ -54,7 +54,7 @@ fn sprite_fits(position: Vector, room: &Room) -> bool {
         return false;
     }
     [0, 90, 180, 270]
-        .into_iter()
+        .iter()
         .map(|angle| Transform::rotate(*angle) * Vector::new(0, 0.5) + position)
         .all(|p| !room.cell_at(p).blocking)
 }

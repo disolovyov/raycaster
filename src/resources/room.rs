@@ -38,6 +38,7 @@ impl Room {
 pub trait CellAt<T: Copy> {
     fn cell_at(&self, position: T) -> &Cell;
     fn cell_at_mut(&mut self, position: T) -> &mut Cell;
+    fn in_bounds(&self, position: T) -> bool;
 }
 
 impl CellAt<Vector> for Room {
@@ -51,6 +52,12 @@ impl CellAt<Vector> for Room {
         let x = position.x as u32;
         let y = position.y as u32;
         self.cell_at_mut((x, y))
+    }
+
+    fn in_bounds(&self, position: Vector) -> bool {
+        let x = position.x as u32;
+        let y = position.y as u32;
+        self.in_bounds((x, y))
     }
 }
 
@@ -69,6 +76,11 @@ impl CellAt<(u32, u32)> for Room {
         debug_assert!(y < self.height, "y = {} out of bounds", y);
 
         &mut self.cells[(self.width * y + x) as usize]
+    }
+
+    fn in_bounds(&self, position: (u32, u32)) -> bool {
+        let (x, y) = position;
+        x < self.width && y < self.height
     }
 }
 

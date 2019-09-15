@@ -47,9 +47,10 @@ fn move_mob(mob: &mut Mob, mob_pose: &mut Pose, player_pose: &Pose, room: &Room)
 
 fn can_see(mob_pose: &Pose, player_pose: &Pose, room: &Room) -> bool {
     let delta = mob_pose.position.direction_to(player_pose.position);
-    !(1..)
+    !(1..100)
+        .map(|step| step as f32 / 2.)
         .map(|step| mob_pose.position + delta * step)
-        .take_while(|pos| pos.distance(player_pose.position) > 1.)
+        .take_while(|pos| room.in_bounds(*pos) && pos.distance(player_pose.position) > 1.)
         .any(|pos| room.cell_at(pos).blocking)
 }
 
